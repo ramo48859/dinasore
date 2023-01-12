@@ -13,6 +13,8 @@ class FBResources:
 
         # Gets the dir path to the py and fbt files
         self.root_path = utils.get_fb_files_path(fb_type)
+        if "__pycache__" in self.root_path:
+            self.root_path = self.root_path.replace('/__pycache__', '')
 
         # Gets the file path to the python file
         self.py_path = os.path.join(self.root_path, fb_type + '.py')
