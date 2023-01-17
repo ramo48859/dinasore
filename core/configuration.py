@@ -87,6 +87,7 @@ class Configuration:
 
             self.set_fb(fb_name, fb_element)
             logging.info('created fb type: {0}, instance: {1}'.format(fb_type, fb_name))
+            logging.error("List of existing blocks: %s" % self.fb_dictionary)
             # returns the both elements
             return fb_element, fb_definition
         else:
@@ -142,12 +143,14 @@ class Configuration:
         logging.info('watch deleted between {0} and {1}'.format(source, destination))
 
     def write_connection(self, source_value, destination):
-        logging.info('writing a connection...')
+        logging.error('writing a connection...')
+        logging.error(f"SRC: {source_value} DST {destination}")
         destination_attr = destination.split(sep='.')
         destination_fb = self.get_fb(destination_attr[0])
         destination_name = destination_attr[1]
 
         v_type, value, is_watch = destination_fb.read_attr(destination_name)
+        logging.error("Event recived!!!!!!!!!!!!!!!!!")
 
         # Verifies if is to write an event
         if source_value == '$e':
@@ -163,6 +166,8 @@ class Configuration:
         else:
             logging.info('writing a hardcoded value...')
             value_to_set = self.convert_type(source_value, v_type)
+            logging.error(f"Data conversion:\n SRC: {source_value}\nType:{v_type}\n Converted value: {value_to_set} DST:{destination_name}")
+
             destination_fb.set_attr(destination_name, value_to_set)
 
         logging.info('connection ({0}) configured with the value {1}'.format(destination, source_value))
