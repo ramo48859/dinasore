@@ -103,8 +103,13 @@ def get_fb_files_path(fb_name):
                                  'resources',
                                  'function_blocks')
 
-    path = next(scan_match(fb_name, root_fbs_path))
-
+    try:
+        path = next(scan_match(fb_name, root_fbs_path))
+    except Exception as e:
+        print("Name {0} path {1}".format(fb_name, root_fbs_path))
+        sys.exit(0)
+    if "__pycache__" in path:
+        path = path.replace('/__pycache__', '')
     return path
 
 def scan_match(fb_name, dir):
