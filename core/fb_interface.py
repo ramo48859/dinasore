@@ -297,11 +297,12 @@ class FBInterface:
                     else:
                         logging.error("doesn't expected interface (check interface name in .fbt file)")
 
-        logging.info('parsing successful with:')
-        logging.info('input events: {0}'.format(self.input_events))
-        logging.info('output events: {0}'.format(self.output_events))
-        logging.info('input vars: {0}'.format(self.input_vars))
-        logging.info('output vars: {0}'.format(self.output_vars))
+        logging.info('Parsing successful with:')
+        logging.info('\t input events: {0}'.format(self.input_events))
+        logging.info('\t output events: {0}'.format(self.output_events))
+        logging.info('\t input vars: {0}'.format(self.input_vars))
+        logging.info('\t output vars: {0}'.format(self.output_vars))
+        logging.info('End of parsing info')
 
         self.output_connections = dict()
 
@@ -526,7 +527,7 @@ class FBInterface:
         return events_list + vars_list
 
     def update_outputs(self, outputs):
-        logging.info('updating the outputs...')
+        logging.error(f'Updating the outputs:{outputs}')
 
         # Converts the second part of the list to variables
         for index, var_name in enumerate(self.output_vars):
