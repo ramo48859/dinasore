@@ -60,8 +60,9 @@ class UaObject:
 
     def populate_vars_folder(self):
         for child in self.xml_root: # InterfaceList
+            #skip things like identification and version info
             if child.tag != 'InterfaceList':
-                raise self.InvalidFbtState
+                continue
             for element in child: # Event and Vars Inputs/Outputs
                 if element.tag == 'InputVars' or element.tag == 'OutputVars':
                     for var_declaration in element: # Var Declarations
@@ -81,8 +82,9 @@ class UaObject:
 
     def populate_events_folder(self):
         for child in self.xml_root: # InterfaceList
+            #skip things like identification and version info
             if child.tag != 'InterfaceList':
-                raise self.InvalidFbtState
+                continue
             for element in child: # Event and Vars Inputs/Outputs
                 if element.tag == 'EventInputs' or element.tag == 'EventOutputs':
                     for event in element: # Events

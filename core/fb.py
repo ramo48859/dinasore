@@ -32,6 +32,7 @@ class FB(threading.Thread, fb_interface.FBInterface):
     def run(self):
         logging.info('fb {0} started.'.format(self.fb_name))
 
+
         while not self.kill_event.is_set():
 
             if self.fb_type != 'TEST_FB':

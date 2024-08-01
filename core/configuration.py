@@ -66,14 +66,20 @@ class Configuration:
                 scheduleArgs = scheduleArgs[3:]
                 scheduleArgs = [i.lower() for i in scheduleArgs]
                 xmlArgs = []
+                
+                
                 for child in fb_definition:
-                    inputvars = child.find('InputVars')
-                    varslist = inputvars.findall('VarDeclaration')
-                    for xmlVar in varslist:
-                        if xmlVar.get('Name') is not None:
-                            xmlArgs.append(xmlVar.get('Name').lower())
-                        else:
-                            logging.error('Could not find mandatory "Name" attribute for variable. Please check {0}.fbt'.format(fb_name))
+                    # avoid error due to 'VersionInfo' or
+                    # 'Identifiction'
+                    if child.tag == 'InterfaceList':
+                        inputvars = child.find('InputVars')
+                        varslist = inputvars.findall('VarDeclaration')
+                        for xmlVar in varslist:
+                            if xmlVar.get('Name') is not None:
+                                xmlArgs.append(xmlVar.get('Name').lower())
+                            else:
+                                logging.error('Could not find mandatory "Name" attribute for variable. Please check {0}.fbt'.format(fb_name))
+                    
 
                 if scheduleArgs != xmlArgs:
                     logging.warning('Argument names for schedule function of {0} do not match definition in {0}.fbt'.format(fb_name))
@@ -210,10 +216,23 @@ class Configuration:
     @staticmethod
     def convert_type(value, value_type):
         converted_value = None
-
+        
+        # Unspecified type ANY
+        # General format: <Type>#<value>
+        # Examples: INT#8500  or FLOAT#41.5
+        if value_type == 'ANY':
+            parts = value.split("#")
+            if len(parts) == 2:
+                value_type, value = parts
+            else:
+                logging.error("Incorrect constant formatting! use <Type>#<value> like INT#8500")
+                
         # String variable
-        if value_type == 'WSTRING' or value_type == 'STRING' or value_type == 'ANY' or value_type == 'TIME':
+        if value_type == 'WSTRING' or value_type == 'STRING' or value_type == 'TIME':
             converted_value = value
+            
+
+            
 
         # Boolean variable
         elif value_type == 'BOOL':

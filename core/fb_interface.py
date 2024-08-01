@@ -224,7 +224,7 @@ class FBInterface:
         """
         Each events and variables dictionary contains:
         - name (str): event/variable name
-        - type (str): INT, REAL, STRING, BOOL
+        - type (str): INT, REAL, STRING, BOOL, ANY
         - watch (boolean): True, False
         """
         self.input_events = OrderedDict()

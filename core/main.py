@@ -6,6 +6,10 @@ import glob
 
 sys.path.append(os.path.join(os.path.dirname(sys.path[0])))
 
+
+#sys.path.insert(0, "F:\Dokumente\Projekte\WechselrichterAuslesen\Dinasore\fronos\dinasore")
+sys.path.insert(0, os.path.join(os.getcwd(),"resources"))
+
 from communication import tcp_server
 from core import manager
 
@@ -68,7 +72,6 @@ if __name__ == "__main__":
     for f in files:
         os.remove(f)
     ##############################################################
-
 
 
     # Configure the logging output

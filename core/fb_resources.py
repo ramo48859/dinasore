@@ -75,7 +75,7 @@ class FBResources:
                     event.set('Type', 'Event')
                 
             for varDec in tree.findall('.//VarDeclaration'):
-                if varDec.get('Type') is not None and varDec.get('Type') not in utils.UA_TYPES:
+                if varDec.get('Type') is not None and varDec.get('Type') not in utils.XML_4DIAC:
                     logging.error('Unknown data type "{0}" assigned to variable {1}'.format(varDec.get('Type'), varDec.get('Name')))
                     logging.error('Defaulting to String')
                     varDec.set('Type', 'String')
