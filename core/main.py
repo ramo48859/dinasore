@@ -16,7 +16,8 @@ from core import manager
 if __name__ == "__main__":
     log_levels = {'ERROR': logging.ERROR,
                   'WARN': logging.WARN,
-                  'INFO': logging.INFO}
+                  'INFO': logging.INFO,
+                  'DEBUG': logging.DEBUG}
 
     address = 'localhost'
     port_diac = 61499
