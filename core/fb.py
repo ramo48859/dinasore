@@ -27,7 +27,10 @@ class FB(threading.Thread, fb_interface.FBInterface):
             message_queue = queue.Queue()
             self.message_queue = message_queue
             self.sniffer_thread = sniffer.Sniffer(fb_type, py_path, message_queue)
-            self.sniffer_thread.start()  
+            self.sniffer_thread.start()
+            
+    def __str__(self):
+        return self.fb_name
 
     def run(self):
         logging.info('fb {0} started.'.format(self.fb_name))
@@ -53,8 +56,9 @@ class FB(threading.Thread, fb_interface.FBInterface):
                 break
 
             inputs = self.read_inputs()
-
-            logging.info('running fb...')
+            
+            logging.info(f'running fb with inputs:({inputs})')
+            logging.info(f'len of inputs: {len(inputs)}')
 
             try:
                 outputs = self.fb_obj.schedule(*inputs)

@@ -380,6 +380,10 @@ class FBInterface:
             #############################################
 
     def set_attr(self, name, new_value=None, set_watch=None):
+        # This fuctions changes the internal state of input/output events
+        # and intput/output variables by writing the tuple 
+        # (type, value, watch)
+        
         # Locks the dictionary usage
         self.lock.acquire()
         try:
@@ -508,12 +512,15 @@ class FBInterface:
     def read_inputs(self):
         logging.info('reading fb inputs...')
 
+        logging.debug(f'checking for new events...event queue: {self.event_queue}')
         # First convert the vars dictionary to a list
         events_list = []
         event_name, event_value = self.pop_event()
         self.set_attr(event_name, new_value=event_value)
         events_list.append(event_name)
         events_list.append(event_value)
+        
+        logging.debug(f'popped event: {events_list}')
 
         # Second converts the event dictionary to a list
         vars_list = []
@@ -534,13 +541,16 @@ class FBInterface:
             # Second part of the list delimited by the events dictionary len
             new_value = outputs[index + len(self.output_events)]
 
-            # Updates the var value
+            logging.debug(f"updating internal state of output var {var_name} = {new_value}")
+            # Updates internal state var value
             self.set_attr(var_name, new_value=new_value)
-
+            
+            logging.debug(f"Updating all connections of {var_name}")
             # Verifies if exist any connection
             if var_name in self.output_connections:
                 # Updates the connection
                 for connection in self.output_connections[var_name]:
+                    logging.debug(f'updating {connection}')
                     connection.update_var(new_value)
 
         # Converts the first part of the list to events
@@ -671,6 +681,9 @@ class Connection:
     def __init__(self, destination_fb, value_name):
         self.destination_fb = destination_fb
         self.value_name = value_name
+        
+    def __str__(self):
+        return f'Connection to {self.destination_fb}.{self.value_name}'
 
     def update_var(self, value):
         self.destination_fb.set_attr(self.value_name, new_value=value)
