@@ -26,7 +26,8 @@ XML_4DIAC = {'String': 'String',
              'LREAL': 'Float',
              'BOOL': 'Boolean',
              'Boolean': 'Boolean',
-             'ANY': None} #not sure if this is right
+             'ANY': None,
+             'DATE_AND_TIME':'Datetime'} #not sure if this is right
 
 UA_NODE = {ua.VariantType.String: ua.NodeId(ua.ObjectIds.String),
            ua.VariantType.Double: ua.NodeId(ua.ObjectIds.Double),

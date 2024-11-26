@@ -5,6 +5,9 @@ import logging
 import importlib
 import sys, os
 
+
+#This sniffer class looks for changes in the function block functions
+
 class Sniffer(threading.Thread):
 
     def __init__(self, fb_type, py_path, message_queue):

@@ -4,6 +4,7 @@ from core import fb_interface
 from xml.etree import ElementTree as ETree
 import logging
 import inspect
+from datetime import datetime, timezone
 
 
 
@@ -220,7 +221,7 @@ class Configuration:
         # Unspecified type ANY
         # General format: <Type>#<value>
         # Examples: INT#8500  or FLOAT#41.5
-        if value_type == 'ANY':
+        if value_type == 'ANY' or value_type == 'DATE_AND_TIME':
             parts = value.split("#")
             if len(parts) == 2:
                 value_type, value = parts
@@ -230,6 +231,17 @@ class Configuration:
         # String variable
         if value_type == 'WSTRING' or value_type == 'STRING' or value_type == 'TIME':
             converted_value = value
+        
+        # date and time variable in iso format like: '2011-11-04 00:05:23.283+00:00'
+        # Caution!!! if +HH:MM is specified the time zone is clear
+        # otherwise the local timeszone is used
+        if value_type == 'DATE_AND_TIME':
+            timestamp = datetime.fromisoformat(value)
+            #localize to system timezone if not specified
+            if timestamp.tzinfo is None or timestamp.tzinfo.utcoffset(timestamp) is None:
+                timestamp = timestamp.astimezone()
+            converted_value = timestamp
+            
             
 
             
