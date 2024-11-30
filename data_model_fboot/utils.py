@@ -102,8 +102,7 @@ def any_element_in_string(array, string):
 
 def get_fb_files_path(fb_name):
     root_fbs_path = os.path.join(os.path.dirname(sys.path[0]),
-                                 'resources',
-                                 'function_blocks')
+                                 'resources')
 
     try:
         path = next(scan_match(fb_name, root_fbs_path))
