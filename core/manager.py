@@ -46,6 +46,9 @@ class Manager:
         request_id = element.attrib['ID']
         xml = None
 
+        logging.info(f'Parsing request: {xml_data}')
+        logging.info(f'Action: {action},ID:{request_id}')
+
         if action == 'CREATE':
             self.requests.append(xml_data)
 
@@ -87,11 +90,14 @@ class Manager:
             # Iterate over the list of children
             for child in element:
                 # Reads values from a watch
-                if child.tag == 'Watches':
+                if child.tag == 'Watches': 
                     xml = ETree.Element('Watches')
+                    logging.info(f"Reading watches: {xml}")
                     # Gets all the watches from all the xml_data
                     for config_id, config in self.config_dictionary.items():
                         resource_xml, resource_len = config.read_watches(self.start_time)
+                        
+                        logging.info(f"config_id:{config_id}, config:{config}, resource_xml:{resource_xml}")
                         # Appends only if has anything
                         if resource_len > 0:
                             xml.append(resource_xml)
@@ -176,6 +182,8 @@ class Manager:
                 if child.tag == 'Watch':
                     watch_source = child.attrib['Source']
                     watch_destination = child.attrib['Destination']
+                    logging.info(f"watch_src: {watch_source}")
+                    logging.info(f"watch_dst: {watch_destination}")
                     self.get_config(config_id).create_watch(watch_source, watch_destination)
 
         elif action == 'DELETE':

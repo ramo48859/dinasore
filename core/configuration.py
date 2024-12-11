@@ -104,8 +104,9 @@ class Configuration:
     def create_connection(self, source, destination):
         logging.info('creating a new connection...')
 
-        source_attr = source.split(sep='.')
-        destination_attr = destination.split(sep='.')
+        #Split on last '.' to seperate fb name and connection
+        source_attr = source.rsplit(sep='.',maxsplit = 1)
+        destination_attr = destination.rsplit(sep='.',maxsplit = 1)
 
         source_fb = self.get_fb(source_attr[0])
         source_name = source_attr[1]
@@ -120,7 +121,7 @@ class Configuration:
     def create_watch(self, source, destination):
         logging.info('creating a new watch...')
 
-        source_attr = source.split(sep='.')
+        source_attr = source.rsplit(sep='.',maxsplit = 1)
         source_fb = self.get_fb(source_attr[0])
         source_name = source_attr[1]
 
@@ -152,7 +153,7 @@ class Configuration:
     def write_connection(self, source_value, destination):
         logging.error('writing a connection...')
         logging.error(f"SRC: {source_value} DST {destination}")
-        destination_attr = destination.split(sep='.')
+        destination_attr = destination.rsplit(sep='.',maxsplit = 1)
         destination_fb = self.get_fb(destination_attr[0])
         destination_name = destination_attr[1]
 
