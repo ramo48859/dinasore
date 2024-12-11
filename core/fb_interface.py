@@ -582,7 +582,15 @@ class FBInterface:
             v_type, value, is_watch = self.read_attr(var_name)
             if is_watch and (value is not None):
                 port = ETree.Element('Port', {'name': var_name})
-                ETree.SubElement(port, 'Data', {'value': str(value),
+                logging.info(f"vtype is: {v_type}")
+                logging.info(f"value is: {value}")
+                logging.info(f"is_watch: {is_watch}")
+                # in 4diac3 strings must start with '\''
+                if v_type == "STRING":
+                    value_string = "\'"+str(value)+"\'"
+                else:
+                    value_string = str(value)
+                ETree.SubElement(port, 'Data', {'value': value_string,
                                                 'forced': 'false'})
                 fb_root.append(port)
 
