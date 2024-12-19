@@ -1,0 +1,19 @@
+[project]
+name = "dinasore"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "argparse>=1.4.0",
+    "cryptography>=44.0.0",
+    "emslib",
+    "numpy>=2.2.0",
+    "opcua>=0.98.13",
+    "pandas>=2.2.3",
+    "psutil>=6.1.0",
+    "scikit-learn>=1.6.0",
+]
+
+[tool.uv.sources]
+emslib = { git = "ssh://git@github.com/ramo48859/emsLib.git", branch = "main" }
