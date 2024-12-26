@@ -348,11 +348,12 @@ requires-dist = [
 [[package]]
 name = "emslib"
 version = "0.1.0"
-source = { git = "ssh://git@github.com/ramo48859/emsLib.git?branch=main#b54c7e0d1a31fa0f30b9db9c3eeafaf288e2c0b8" }
+source = { git = "ssh://git@github.com/ramo48859/emsLib.git?branch=main#2c4b22fb824afe109a35376062f0dc80d3aef13d" }
 dependencies = [
     { name = "cftime" },
     { name = "matplotlib" },
     { name = "numpy" },
+    { name = "pymodbus" },
     { name = "requests-cache" },
     { name = "scikit-learn" },
     { name = "scipy" },
@@ -867,6 +868,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/1d/b2/31537cf4b1ca988837256c910a668b553fceb8f069bedc4b1c826024b52c/pycparser-2.22.tar.gz", hash = "sha256:491c8be9c040f5390f5bf44a5b07752bd07f56edf992381b05c701439eec10f6", size = 172736 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/13/a3/a812df4e2dd5696d1f351d58b8fe16a405b234ad2886a0dab9183fb78109/pycparser-2.22-py3-none-any.whl", hash = "sha256:c3702b6d3dd8c7abc1afa565d7e63d53a1d0bd86cdc24edd75470f4de499cfcc", size = 117552 },
+]
+
+[[package]]
+name = "pymodbus"
+version = "3.8.2"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/49/99/375ce7b037e89ebaf55a55e219ffbf83efdcc0b93a9d39a71d6a1f848e57/pymodbus-3.8.2.tar.gz", hash = "sha256:c57e41662cb7c26830f2f0e0166ffe2fe08ffd8749e0ce0a56f3d9f4bdc2a5c6", size = 159181 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/59/1f/01d0c228d8018123d4fdfd811fe81d073e1df53035b3df185b264975d111/pymodbus-3.8.2-py3-none-any.whl", hash = "sha256:3e0ec2ebea66cff503d125a595f1b5e7b9592fecc94ecec3040e591be9937cd5", size = 159622 },
 ]
 
 [[package]]
