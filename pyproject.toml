@@ -17,3 +17,11 @@ dependencies = [
 
 [tool.uv.sources]
 emslib = { git = "ssh://git@github.com/ramo48859/emsLib.git", branch = "main" }
+
+[dependency-groups]
+dev = [
+    "snakeviz>=2.2.2",
+]
+
+
+
