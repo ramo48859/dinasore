@@ -129,11 +129,10 @@ def get_fb_files_path(fb_name):
 
 
 def scan_match(fb_name, dir):
-    for entry in os.scandir(dir):
-        if entry.is_dir():
-            yield from scan_match(fb_name, entry.path)
-        elif entry.name.split(".")[0] == fb_name:
-            yield dir
+    for root, dirs, files in os.walk(dir):
+        for file in files:
+            if file.split(".")[0] == fb_name:
+                yield root
 
 
 class UaInterface:
