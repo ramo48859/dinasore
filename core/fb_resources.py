@@ -21,6 +21,9 @@ class FBResources:
         # Gets the file path to the fbt (xml) file
         self.fbt_path = os.path.join(self.root_path, fb_type + ".fbt")
 
+        # Loads the xml function block definition from disk
+        self.xml_tree = self._fetch_xml()
+
     def import_fb(self):
         logging.info("importing fb python file and definition file...")
         root = None
@@ -43,7 +46,7 @@ class FBResources:
             # Instance the fb class
             fb_obj = fb_class()
             # Reads the xml
-            tree = ETree.parse(self.fbt_path)
+            tree = self.xml_tree
             # Gets the root element
             root = tree.getroot()
 
@@ -94,22 +97,23 @@ class FBResources:
 
         return root, fb_obj
 
-    def get_xml(self):
+    def _fetch_xml(self):
         logging.info("getting the xml fb definition...")
-        root = None
+        tree = None
 
         try:
             # Reads the xml
             tree = ETree.parse(self.fbt_path)
-            # Gets the root element
-            root = tree.getroot()
         except FileNotFoundError as error:
             logging.error("can not find the .fbt file (check .fbt name = fb_type.fbt)")
             logging.error(error)
         else:
             logging.info("fb definition (xml) imported from: {0}".format(self.fbt_path))
 
-        return root
+        return tree
+
+    def get_xml(self):
+        return self.xml_tree
 
     def get_description(self):
         xml_root = self.get_xml()

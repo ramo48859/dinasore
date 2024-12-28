@@ -2,10 +2,12 @@ import logging
 import os
 import sys
 
+from fb_resources import FBResources
 from opc_ua import peer
 from xml.etree import ElementTree as ETree
 from data_model_fboot import ua_object, monitor, utils, ua_method
 from core.configuration import Configuration
+from core.fb_resources import FBResources
 
 
 class UaManagerFboot(peer.UaPeer):
@@ -134,15 +136,8 @@ class UaManagerFboot(peer.UaPeer):
                 if xml_element.get("Action") == "CREATE":
                     for child in xml_element:
                         if child.tag == "FB" and child.get("Type") != "EMB_RES":
-                            root_path = utils.get_fb_files_path(child.get("Type"))
-                            # Check fbt file
-                            fb_file = open(
-                                os.path.join(
-                                    root_path, "{0}.fbt".format(child.get("Type"))
-                                ),
-                                "r",
-                            )
-                            self.parse_fbt(child.get("Name"), fb_file)
+                            fb_resource = FBResources(child.get("Type"))
+                            self.parse_fbt(fb_resource, child.get("Name"))
             except KeyError:
                 raise self.InvalidFbootState
 
@@ -217,9 +212,8 @@ class UaManagerFboot(peer.UaPeer):
             if not fb.init_is_connected() and fb.name != "START":
                 self.config.create_connection("START.COLD", f"{fb.fb_name}.INIT")
 
-    def parse_fbt(self, fb_name, file):
-        xml_tree = ETree.parse(file.name)
-        xml_root = xml_tree.getroot()
+    def parse_fbt(self, fb_resource: FBResources, fb_name: str):
+        xml_root = fb_resource.get_xml().getroot()
         if xml_root.get("OpcUa") == "METHOD":
             # set flag to create ua_method
             self.method_names.append(fb_name)
@@ -227,10 +221,9 @@ class UaManagerFboot(peer.UaPeer):
         else:
             # add ua object to dictionary
             item = ua_object.UaObject(
-                self, self.folders.get("FunctionBlocks"), fb_name, xml_root
+                self, self.folders.get("FunctionBlocks"), fb_resource, fb_name
             )
             self.ua_objects[fb_name] = item
-        file.close()
 
     def stop_ua(self):
         # stops the monitor thread

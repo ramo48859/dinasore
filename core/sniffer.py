@@ -6,16 +6,18 @@ import importlib
 import sys
 import os
 
+from fb_resources import FBResources
+
 
 # This sniffer class looks for changes in the function block functions
 
 
 class Sniffer(threading.Thread):
-    def __init__(self, fb_type, py_path, message_queue):
-        threading.Thread.__init__(self, name=fb_type)
+    def __init__(self, fb_resource: FBResources, message_queue):
+        threading.Thread.__init__(self, name=fb_resource.fb_type)
         self.alive = True
-        self.fb_type = fb_type
-        self.py_path = py_path
+        self.fb_type = fb_resource.fb_type
+        self.py_path = fb_resource.py_path
         self.message_queue = message_queue
         self.fname = pathlib.Path(self.py_path)
         if not self.fname.exists():

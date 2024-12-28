@@ -2,23 +2,26 @@ from data_model_fboot import utils
 import logging
 import uuid
 
+from fb_resources import FBResources
+
 
 class UaObject:
     class InvalidFbtState(Exception):
         pass
 
-    def __init__(self, ua_server, ua_folder, fb_name, xml_root):
+    def __init__(self, ua_server, ua_folder, fb_resource: FBResources, fb_name: str):
         self.ua_server = ua_server
         self.ua_folder = ua_folder
+        self.fb_resource = fb_resource
         self.fb_name = fb_name
-        self.xml_root = xml_root
-        self.fb_type = xml_root.get("Name")
-        self.opc_ua_type = xml_root.get("OpcUa")
+        self.xml_root = fb_resource.get_xml().getroot()
+        self.fb_type = self.xml_root.get("Name")
+        self.opc_ua_type = self.xml_root.get("OpcUa")
         self.folders = dict()
         self.ua_vars = dict()
         # creates the fb inside the configuration
         self.ua_server.config.create_virtualized_fb(
-            self.fb_name, self.fb_type, self.update_variables
+            self.fb_name, fb_resource, self.update_variables
         )
         # creates required connections
 

@@ -1,10 +1,13 @@
-from core import fb_resources
 from core import fb
 from core import fb_interface
 from xml.etree import ElementTree as ETree
 import logging
 import inspect
 from datetime import datetime
+
+from fb_resources import FBResources
+
+from core.fb_resources import FBResources
 
 
 class Configuration:
@@ -15,7 +18,8 @@ class Configuration:
 
         self.config_id = config_id
 
-        self.create_fb("START", config_type)
+        start_resource = FBResources(config_type)
+        self.create_fb("START", start_resource)
 
     def get_fb(self, fb_name):
         fb_element = None
@@ -33,26 +37,24 @@ class Configuration:
     def exists_fb(self, fb_name):
         return fb_name in self.fb_dictionary
 
-    def create_virtualized_fb(self, fb_name, fb_type, ua_update):
+    def create_virtualized_fb(self, fb_name, fb_resource: FBResources, ua_update):
         logging.info("creating a virtualized (opc-ua) fb {0}...".format(fb_name))
 
-        self.create_fb(fb_name, fb_type, monitor=True)
+        self.create_fb(fb_name, fb_resource, monitor=True)
         # sets the ua variables update method
         fb2update = self.get_fb(fb_name)
         fb2update.ua_variables_update = ua_update
 
-    def create_fb(self, fb_name, fb_type, monitor=False):
+    def create_fb(self, fb_name, fb_resource: FBResources, monitor=False):
         logging.info("creating a new fb...")
 
-        fb_res = fb_resources.FBResources(fb_type)
-
-        exists_fb = fb_res.exists_fb()
+        exists_fb = fb_resource.exists_fb()
         if not exists_fb:
             # Downloads the fb definition and python code
             logging.info("fb doesnt exists, needs to be downloaded ...")
-            fb_res.download_fb()
+            fb_resource.download_fb()
 
-        fb_definition, fb_obj = fb_res.import_fb()
+        fb_definition, fb_obj = fb_resource.import_fb()
 
         # check if if happened any importing error
         if fb_definition is not None:
@@ -92,21 +94,23 @@ class Configuration:
 
             # if it is a real FB, not a hidden one
             if monitor:
-                fb_element = fb.FB(
-                    fb_name, fb_type, fb_obj, fb_definition, monitor=self.monitor
-                )
+                fb_element = fb.FB(fb_name, fb_resource, fb_obj, monitor=self.monitor)
             else:
-                fb_element = fb.FB(fb_name, fb_type, fb_obj, fb_definition)
+                fb_element = fb.FB(fb_name, fb_resource, fb_obj)
 
             self.set_fb(fb_name, fb_element)
-            logging.info("created fb type: {0}, instance: {1}".format(fb_type, fb_name))
+            logging.info(
+                "created fb type: {0}, instance: {1}".format(
+                    fb_resource.fb_type, fb_name
+                )
+            )
             logging.error("List of existing blocks: %s" % self.fb_dictionary)
             # returns the both elements
             return fb_element, fb_definition
         else:
             logging.error(
                 "can not create the fb type: {0}, instance: {1}".format(
-                    fb_type, fb_name
+                    fb_resource.fb_type, fb_name
                 )
             )
             return None, None
@@ -114,7 +118,7 @@ class Configuration:
     def create_connection(self, source, destination):
         logging.info("creating a new connection...")
 
-        # Split on last '.' to seperate fb name and connection
+        # Split on last '.' to separate fb name and connection
         source_attr = source.rsplit(sep=".", maxsplit=1)
         destination_attr = destination.rsplit(sep=".", maxsplit=1)
 

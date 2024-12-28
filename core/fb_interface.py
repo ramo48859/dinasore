@@ -5,6 +5,8 @@ import logging
 import time
 import datetime
 
+from fb_resources import FBResources
+
 
 class FBInterface:
     """
@@ -270,9 +272,9 @@ class FBInterface:
 
     ###############################################################################
 
-    def __init__(self, fb_name, fb_type, xml_root, monitor=None):
+    def __init__(self, fb_name, fb_resource: FBResources, monitor=None):
         self.fb_name = fb_name
-        self.fb_type = fb_type
+        self.fb_type = fb_resource.fb_type
         self.monitor_fb = monitor
         self.stop_thread = False
 
@@ -292,7 +294,7 @@ class FBInterface:
         logging.info("parsing the fb interface (inputs/outputs events/vars)")
 
         # Parse the xml (iterates over the root)
-        for fb in xml_root:
+        for fb in fb_resource.get_xml().getroot():
             # Searches for the interfaces list
             if fb.tag == "InterfaceList":
                 # Iterates over the interface list

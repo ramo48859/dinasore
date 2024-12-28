@@ -2,31 +2,27 @@ import threading
 import logging
 from core import fb_interface
 from core import sniffer
-import os
-from data_model_fboot import utils
 import queue
+
+from fb_resources import FBResources
 
 
 class FB(threading.Thread, fb_interface.FBInterface):
-    def __init__(self, fb_name, fb_type, fb_obj, fb_xml, monitor=None):
+    def __init__(self, fb_name, fb_resource: FBResources, fb_obj, monitor=None):
         threading.Thread.__init__(self, name=fb_name)
-        fb_interface.FBInterface.__init__(self, fb_name, fb_type, fb_xml, monitor)
+        fb_interface.FBInterface.__init__(self, fb_name, fb_resource, monitor)
 
         self.fb_obj = fb_obj
         self.kill_event = threading.Event()
         self.execution_end = threading.Event()
         self.ua_variables_update = None
         self.update_variables_fboot = None
-        self.fb_type = fb_type
+        self.fb_type = fb_resource.fb_type
 
-        if fb_type != "TEST_FB" and fb_name != "START":
-            # Gets the dir path to the py and fbt files
-            root_path = utils.get_fb_files_path(fb_type)
-            # Gets the file path to the python file
-            py_path = os.path.join(root_path, fb_type + ".py")
+        if fb_resource.fb_type != "TEST_FB" and fb_name != "START":
             message_queue = queue.Queue()
             self.message_queue = message_queue
-            self.sniffer_thread = sniffer.Sniffer(fb_type, py_path, message_queue)
+            self.sniffer_thread = sniffer.Sniffer(fb_resource, message_queue)
             self.sniffer_thread.start()
 
     def __str__(self):
