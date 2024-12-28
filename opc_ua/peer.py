@@ -6,12 +6,14 @@ import logging
 
 
 class UaPeer(Server, base.UaBase):
-
-    def __init__(self, address, server_name='systec_ua'):
+    def __init__(self, address, server_name="systec_ua"):
         Server.__init__(self)
         base.UaBase.__init__(self)
 
-        logging.basicConfig(level=logging.INFO, format='[%(asctime)s][%(levelname)s][%(threadName)-15s] %(message)s')
+        logging.basicConfig(
+            level=logging.INFO,
+            format="[%(asctime)s][%(levelname)s][%(threadName)-15s] %(message)s",
+        )
 
         self.set_endpoint(address)
         self.set_server_name(server_name)

@@ -11,10 +11,11 @@ class SubHandler(object):
     """
 
     def event_notification(self, event):
-        print ("New event received: ", event)
+        print("New event received: ", event)
 
     def datachange_notification(self, node, val, data):
-        t = Thread(target=workers_example.SubWorkers.datachange_notification_worker, args=(node, val, data))
+        t = Thread(
+            target=workers_example.SubWorkers.datachange_notification_worker,
+            args=(node, val, data),
+        )
         t.start()
-
-

@@ -2,7 +2,6 @@ from opcua import ua
 
 
 class UaBase:
-
     def __init__(self):
         self.root = None
         self.methods_dictionary = dict()
@@ -28,7 +27,9 @@ class UaBase:
 
         return my_var
 
-    def create_typed_variable(self, path, index, var_name, var_type, value_rank, dimensions=0, writable=False):
+    def create_typed_variable(
+        self, path, index, var_name, var_type, value_rank, dimensions=0, writable=False
+    ):
         my_obj = self.root.get_child(path)
         my_var = my_obj.add_variable(index, var_name, [], var_type)
         my_var.set_value_rank(value_rank)
@@ -47,7 +48,9 @@ class UaBase:
         my_obj = self.root.get_child(path)
         my_obj.add_property(index, property_name, value)
 
-    def create_method(self, path, index, method_name, func, input_args=None, output_args=None):
+    def create_method(
+        self, path, index, method_name, func, input_args=None, output_args=None
+    ):
         my_obj = self.root.get_child(path)
         my_obj.add_method(index, method_name, func, input_args, output_args)
 

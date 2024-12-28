@@ -5,7 +5,6 @@ from communication import client_thread
 
 
 class TcpServer:
-
     def __init__(self, ip, port, limit_connections, config_m):
         self.config_m = config_m
 
@@ -14,7 +13,7 @@ class TcpServer:
 
         # Bind the socket to the port
         server_address = (ip, port)
-        logging.info('starting up on %s port %s' % server_address)
+        logging.info("starting up on %s port %s" % server_address)
 
         # Reuse the socket address
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -22,7 +21,7 @@ class TcpServer:
         try:
             self.sock.bind(server_address)
         except socket.error as msg:
-            logging.error('bind failed.')
+            logging.error("bind failed.")
             logging.error(msg)
             sys.exit()
 
@@ -31,7 +30,7 @@ class TcpServer:
 
     def handle_client(self):
         # Wait for a connection
-        logging.info('waiting for a connection...')
+        logging.info("waiting for a connection...")
         connection, client_address = self.sock.accept()
 
         thread = client_thread.ClientThread(connection, client_address, self.config_m)
