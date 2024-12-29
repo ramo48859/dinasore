@@ -1,13 +1,13 @@
-from core import fb
-from core import fb_interface
 from xml.etree import ElementTree as ETree
 import logging
 import inspect
 from datetime import datetime
+import os
 
-from fb_resources import FBResources
-
+from core import fb
+from core import fb_interface
 from core.fb_resources import FBResources
+from data_model_fboot.utils import create_fb_index
 
 
 class Configuration:
@@ -18,7 +18,12 @@ class Configuration:
 
         self.config_id = config_id
 
-        start_resource = FBResources(config_type)
+        # search function block on file system
+        root_fbs_path = os.path.join(os.getcwd(), "resources")
+        fb_dict = create_fb_index(root_fbs_path)
+        self.fb_dict = fb_dict
+
+        start_resource = FBResources(config_type, fb_dict[config_type])
         self.create_fb("START", start_resource)
 
     def get_fb(self, fb_name):

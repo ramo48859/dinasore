@@ -356,7 +356,7 @@ dev = [{ name = "snakeviz", specifier = ">=2.2.2" }]
 [[package]]
 name = "emslib"
 version = "0.1.0"
-source = { git = "ssh://git@github.com/ramo48859/emsLib.git?branch=main#2c4b22fb824afe109a35376062f0dc80d3aef13d" }
+source = { git = "ssh://git@github.com/ramo48859/emsLib.git?branch=main#aca757847a082cf4b62525de49b433b0f90f9b60" }
 dependencies = [
     { name = "cftime" },
     { name = "matplotlib" },

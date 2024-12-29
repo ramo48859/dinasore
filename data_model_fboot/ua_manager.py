@@ -1,6 +1,7 @@
 import logging
 import os
 import sys
+from time import perf_counter
 
 from fb_resources import FBResources
 from opc_ua import peer
@@ -90,6 +91,7 @@ class UaManagerFboot(peer.UaPeer):
         file.close()
 
     def from_fboot(self):
+        tic = perf_counter()
         # Check if data model file exists and is not empty
         try:
             file = open(self.fboot_path, "r")
@@ -113,6 +115,8 @@ class UaManagerFboot(peer.UaPeer):
                         self.method = ua_method.UaMethod(
                             self, self.folders.get("OPC-UA_Methods"), self.method_root
                         )
+                    toc = perf_counter()
+                    logging.info(f"FB generation time: {toc-tic}s")
                     self.config.start_work()
 
     def parse_fboot(self, file):
@@ -136,7 +140,9 @@ class UaManagerFboot(peer.UaPeer):
                 if xml_element.get("Action") == "CREATE":
                     for child in xml_element:
                         if child.tag == "FB" and child.get("Type") != "EMB_RES":
-                            fb_resource = FBResources(child.get("Type"))
+                            type = child.get("Type")
+                            root_path = self.config.fb_dict[type]
+                            fb_resource = FBResources(type, root_path)
                             self.parse_fbt(fb_resource, child.get("Name"))
             except KeyError:
                 raise self.InvalidFbootState

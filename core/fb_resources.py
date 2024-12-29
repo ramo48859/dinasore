@@ -5,15 +5,15 @@ import xml.etree.ElementTree as ETree
 import logging
 from data_model_fboot import utils
 
+from time import perf_counter
+
 
 class FBResources:
-    def __init__(self, fb_type):
+    def __init__(self, fb_type: str, root_path: str):
         self.fb_type = fb_type
 
         # Gets the dir path to the py and fbt files
-        self.root_path = utils.get_fb_files_path(fb_type)
-        if "__pycache__" in self.root_path:
-            self.root_path = self.root_path.replace("/__pycache__", "")
+        self.root_path = root_path
 
         # Gets the file path to the python file
         self.py_path = os.path.join(self.root_path, fb_type + ".py")
@@ -40,7 +40,13 @@ class FBResources:
                     package += dir + "."
             package = package[:-1]
             # Import method from python file
+            start = perf_counter()
             py_fb = importlib.import_module("." + self.fb_type, package=package)
+            # sys.path.insert(0,self.root_path)
+            # py_fb = importlib.import_module(self.fb_type)
+            # sys.path.pop(0)
+            end = perf_counter()
+            logging.info(f"import_time: {end-start}")
             # Gets the running fb method
             fb_class = getattr(py_fb, self.fb_type)
             # Instance the fb class
