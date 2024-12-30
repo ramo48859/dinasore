@@ -10,6 +10,8 @@ from data_model_fboot import ua_object, monitor, utils, ua_method
 from core.configuration import Configuration
 from core.fb_resources import FBResources
 
+logger = logging.getLogger("dinasore")
+
 
 class UaManagerFboot(peer.UaPeer):
     class InvalidFbootState(Exception):
@@ -96,18 +98,16 @@ class UaManagerFboot(peer.UaPeer):
         try:
             file = open(self.fboot_path, "r")
         except FileNotFoundError:
-            logging.warning(
-                "Could not find fboot definition file. Awaiting deployment."
-            )
+            logger.warning("Could not find fboot definition file. Awaiting deployment.")
         else:
             if os.stat(self.fboot_path).st_size == 0:
-                logging.warning("Fboot definition file is empty. Awaiting deployment")
+                logger.warning("Fboot definition file is empty. Awaiting deployment")
             else:
                 try:
                     # Parse data model file
                     self.parse_fboot(file)
                 except self.InvalidFbootState:
-                    logging.error(
+                    logger.error(
                         "Fboot definition file is in an invalid state. Awaiting deployment"
                     )
                 else:
@@ -116,7 +116,7 @@ class UaManagerFboot(peer.UaPeer):
                             self, self.folders.get("OPC-UA_Methods"), self.method_root
                         )
                     toc = perf_counter()
-                    logging.info(f"FB generation time: {toc-tic}s")
+                    logger.info(f"FB generation time: {toc-tic}s")
                     self.config.start_work()
 
     def parse_fboot(self, file):

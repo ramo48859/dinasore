@@ -6,6 +6,8 @@ import queue
 
 from fb_resources import FBResources
 
+logger = logging.getLogger("dinasore")
+
 
 class FB(threading.Thread, fb_interface.FBInterface):
     def __init__(self, fb_name, fb_resource: FBResources, fb_obj, monitor=None):
@@ -29,13 +31,13 @@ class FB(threading.Thread, fb_interface.FBInterface):
         return self.fb_name
 
     def run(self):
-        logging.info("fb {0} started.".format(self.fb_name))
+        logger.info("fb {0} started.".format(self.fb_name))
 
         while not self.kill_event.is_set():
             if self.fb_type != "TEST_FB":
                 try:
                     self.fb_obj = self.message_queue.get(False)
-                    logging.info("Updated {0}".format(self.fb_type))
+                    logger.info("Updated {0}".format(self.fb_type))
                 except queue.Empty:
                     pass
 
@@ -51,27 +53,27 @@ class FB(threading.Thread, fb_interface.FBInterface):
 
             inputs = self.read_inputs()
 
-            logging.info(f"running fb with inputs:({inputs})")
-            logging.info(f"len of inputs: {len(inputs)}")
+            logger.info(f"running fb with inputs:({inputs})")
+            logger.info(f"len of inputs: {len(inputs)}")
 
             try:
                 outputs = self.fb_obj.schedule(*inputs)
 
             except TypeError as error:
-                logging.error(
+                logger.error(
                     "invalid number of arguments (check if fb method args are in fb_type.fbt)"
                 )
-                logging.exception(error)
-                logging.error(error)
+                logger.exception(error)
+                logger.error(error)
                 # Stops the thread
-                logging.info("stopping the fb work...")
+                logger.info("stopping the fb work...")
                 break
 
             except Exception as ex:
-                logging.error(ex)
-                logging.exception(ex)
+                logger.error(ex)
+                logger.exception(ex)
                 # Stops the thread
-                logging.info("stopping the fb work...")
+                logger.info("stopping the fb work...")
                 break
 
             else:
@@ -80,11 +82,11 @@ class FB(threading.Thread, fb_interface.FBInterface):
                     break
 
                 if outputs is None:
-                    logging.error(
+                    logger.error(
                         "Outputs are null, please check {0}.py".format(self.fb_name)
                     )
                     # Stops the thread
-                    logging.info("stopping the fb work...")
+                    logger.info("stopping the fb work...")
                     break
 
                 self.update_outputs(outputs)
@@ -108,9 +110,9 @@ class FB(threading.Thread, fb_interface.FBInterface):
         try:
             self.fb_obj.__del__()
         except AttributeError as exc:
-            logging.warning("can not delete the fb object.")
-            logging.warning(exc)
+            logger.warning("can not delete the fb object.")
+            logger.warning(exc)
 
-        logging.info("fb {0} stopped.".format(self.fb_name))
+        logger.info("fb {0} stopped.".format(self.fb_name))
         if self.fb_type != "TEST_FB":
             self.sniffer_thread.kill()

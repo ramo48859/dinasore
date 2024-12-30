@@ -7,6 +7,8 @@ import datetime
 
 from fb_resources import FBResources
 
+logger = logging.getLogger("dinasore")
+
 
 class FBInterface:
     """
@@ -291,7 +293,7 @@ class FBInterface:
         self.input_vars = OrderedDict()
         self.output_vars = OrderedDict()
 
-        logging.info("parsing the fb interface (inputs/outputs events/vars)")
+        logger.info("parsing the fb interface (inputs/outputs events/vars)")
 
         # Parse the xml (iterates over the root)
         for fb in fb_resource.get_xml().getroot():
@@ -308,10 +310,10 @@ class FBInterface:
                                 event_name = event.attrib["Name"]
                                 event_type = event.attrib["Type"]
                             except KeyError:
-                                logging.error(
+                                logger.error(
                                     'Could not find mandatory attributes "Name" and "Type"'
                                 )
-                                logging.error(
+                                logger.error(
                                     "Please check {0}.fbt for mistakes".format(fb_name)
                                 )
                             else:
@@ -329,10 +331,10 @@ class FBInterface:
                                 event_name = event.attrib["Name"]
                                 event_type = event.attrib["Type"]
                             except KeyError:
-                                logging.error(
+                                logger.error(
                                     'Could not find mandatory attributes "Name" and "Type"'
                                 )
-                                logging.error(
+                                logger.error(
                                     "Please check {0}.fbt for mistakes".format(fb_name)
                                 )
                             else:
@@ -350,10 +352,10 @@ class FBInterface:
                                 var_name = var.attrib["Name"]
                                 var_type = var.attrib["Type"]
                             except KeyError:
-                                logging.error(
+                                logger.error(
                                     'Could not find mandatory attributes "Name" and "Type"'
                                 )
-                                logging.error(
+                                logger.error(
                                     "Please check {0}.fbt for mistakes".format(fb_name)
                                 )
                             else:
@@ -367,10 +369,10 @@ class FBInterface:
                                 var_name = var.attrib["Name"]
                                 var_type = var.attrib["Type"]
                             except KeyError:
-                                logging.error(
+                                logger.error(
                                     'Could not find mandatory attributes "Name" and "Type"'
                                 )
-                                logging.error(
+                                logger.error(
                                     "Please check {0}.fbt for mistakes".format(fb_name)
                                 )
                             else:
@@ -378,16 +380,16 @@ class FBInterface:
 
                     # Doesn't expected interface
                     else:
-                        logging.error(
+                        logger.error(
                             "doesn't expected interface (check interface name in .fbt file)"
                         )
 
-        logging.info("Parsing successful with:")
-        logging.info("\t input events: {0}".format(self.input_events))
-        logging.info("\t output events: {0}".format(self.output_events))
-        logging.info("\t input vars: {0}".format(self.input_vars))
-        logging.info("\t output vars: {0}".format(self.output_vars))
-        logging.info("End of parsing info")
+        logger.info("Parsing successful with:")
+        logger.info("\t input events: {0}".format(self.input_events))
+        logger.info("\t output events: {0}".format(self.output_events))
+        logger.info("\t input vars: {0}".format(self.input_vars))
+        logger.info("\t output vars: {0}".format(self.output_vars))
+        logger.info("End of parsing info")
 
         self.output_connections = dict()
         self.input_connections = dict()
@@ -556,8 +558,8 @@ class FBInterface:
                 v_type, value, is_watch = self.output_events[name]
 
         except KeyError as error:
-            logging.error("can not find that fb attribute")
-            logging.error(error)
+            logger.error("can not find that fb attribute")
+            logger.error(error)
 
         finally:
             # Unlocks the dictionary usage
@@ -622,9 +624,9 @@ class FBInterface:
         self.new_event.clear()
 
     def read_inputs(self):
-        logging.info("reading fb inputs...")
+        logger.info("reading fb inputs...")
 
-        logging.debug(f"checking for new events...event queue: {self.event_queue}")
+        logger.debug(f"checking for new events...event queue: {self.event_queue}")
         # First convert the vars dictionary to a list
         events_list = []
         event_name, event_value = self.pop_event()
@@ -632,11 +634,11 @@ class FBInterface:
         events_list.append(event_name)
         events_list.append(event_value)
 
-        logging.debug(f"popped event: {events_list}")
+        logger.debug(f"popped event: {events_list}")
 
         # Second converts the event dictionary to a list
         vars_list = []
-        logging.info("input vars: {0}".format(self.input_vars))
+        logger.info("input vars: {0}".format(self.input_vars))
         # Get all the vars
         for index, var_name in enumerate(self.input_vars):
             v_type, value, is_watch = self.read_attr(var_name)
@@ -646,25 +648,25 @@ class FBInterface:
         return events_list + vars_list
 
     def update_outputs(self, outputs):
-        logging.error(f"Updating the outputs:{outputs}")
+        logger.info(f"Updating the outputs:{outputs}")
 
         # Converts the second part of the list to variables
         for index, var_name in enumerate(self.output_vars):
             # Second part of the list delimited by the events dictionary len
             new_value = outputs[index + len(self.output_events)]
 
-            logging.debug(
+            logger.debug(
                 f"updating internal state of output var {var_name} = {new_value}"
             )
             # Updates internal state var value
             self.set_attr(var_name, new_value=new_value)
 
-            logging.debug(f"Updating all connections of {var_name}")
+            logger.debug(f"Updating all connections of {var_name}")
             # Verifies if exist any connection
             if var_name in self.output_connections:
                 # Updates the connection
                 for connection in self.output_connections[var_name]:
-                    logging.debug(f"updating {connection}")
+                    logger.debug(f"updating {connection}")
                     connection.update_var(new_value)
 
         # Converts the first part of the list to events
@@ -697,9 +699,9 @@ class FBInterface:
             v_type, value, is_watch = self.read_attr(var_name)
             if is_watch and (value is not None):
                 port = ETree.Element("Port", {"name": var_name})
-                logging.info(f"vtype is: {v_type}")
-                logging.info(f"value is: {value}")
-                logging.info(f"is_watch: {is_watch}")
+                logger.info(f"vtype is: {v_type}")
+                logger.info(f"value is: {value}")
+                logger.info(f"is_watch: {is_watch}")
                 # in 4diac3 strings must start with '\''
                 if v_type == "STRING":
                     value_string = "'" + str(value) + "'"

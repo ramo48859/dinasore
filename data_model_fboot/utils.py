@@ -54,6 +54,8 @@ XML_NODE = {
     ua.ObjectIds.Boolean: "Boolean",
 }
 
+logger = logging.getLogger("dinasore")
+
 
 def default_folder(ua_peer, obj_idx, obj_path, path_list, folder_name):
     # creates the methods folder
@@ -146,14 +148,14 @@ def create_fb_index(root_directory: str) -> Dict[str, str]:
     for fbt_file in fbt_files:
         dir_name = os.path.dirname(fbt_file)
         fbt_file_name = os.path.basename(fbt_file)
-        fb_type = fbt_file_name.replace('.fbt', '')
+        fb_type = fbt_file_name.replace(".fbt", "")
         py_file = os.path.join(dir_name, fbt_file_name.replace(".fbt", ".py"))
 
         # Check if the corresponding .py file exists
         if os.path.exists(py_file):
             fb_index[fb_type] = dir_name
         else:
-            logging.warning(
+            logger.warning(
                 f"Discovered {py_file} but not its corresponding python implementation *.py"
             )
 

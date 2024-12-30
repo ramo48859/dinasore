@@ -1,6 +1,8 @@
 import threading
 import logging
 
+logger = logging.getLogger("dinasore")
+
 
 class ClientThread(threading.Thread):
     def __init__(self, connection, client_address, config_m):
@@ -14,20 +16,20 @@ class ClientThread(threading.Thread):
 
     def run(self):
         try:
-            logging.info("connection from {0}".format(self.client_address))
+            logger.info("connection from {0}".format(self.client_address))
 
             # Receive the data in small chunks and retransmit it
             while True:
                 data = self.connection.recv(2048)
-                logging.info("received {0}".format(data))
+                logger.info("received {0}".format(data))
 
                 if data:
                     response = self.parse_request(data)
-                    logging.info("sending response {0}".format(response))
+                    logger.info("sending response {0}".format(response))
                     self.connection.sendall(response)
 
                 else:
-                    logging.info("no more data from {0}".format(self.client_address))
+                    logger.info("no more data from {0}".format(self.client_address))
                     break
 
         finally:
@@ -37,23 +39,23 @@ class ClientThread(threading.Thread):
     def remove_service_symbols(self, data):
         if "&apos;" in data:
             data = data.replace("&apos;", "")
-            logging.error(f"After replacement: {data}")
+            logger.error(f"After replacement: {data}")
         elif "&quote;" in data:
             data = data.replace("&quote;", "")
-            logging.error(f"After replacement: {data}")
+            logger.error(f"After replacement: {data}")
         return data
 
     def parse_request(self, data):
         config_id_size = int(data[1:3].hex(), 16)
 
         if config_id_size == 0:
-            logging.info("general Request:")
+            logger.info("general Request:")
             data_str = data[6:].decode("utf-8")
             data_str = self.remove_service_symbols(data_str)
             response = self.config_m.parse_general(data_str)
         else:
             config_id = data[3 : config_id_size + 3].decode("utf-8")
-            logging.info(f"configuration Request: config_id:{config_id}")
+            logger.info(f"configuration Request: config_id:{config_id}")
             data_str = data[config_id_size + 3 + 3 :].decode("utf-8")
             data_str = self.remove_service_symbols(data_str)
             response = self.config_m.parse_configuration(data_str, config_id)

@@ -9,6 +9,8 @@ from core import fb_interface
 from core.fb_resources import FBResources
 from data_model_fboot.utils import create_fb_index
 
+logger = logging.getLogger("dinasore")
+
 
 class Configuration:
     def __init__(self, config_id, config_type, monitor=None):
@@ -31,8 +33,8 @@ class Configuration:
         try:
             fb_element = self.fb_dictionary[fb_name]
         except KeyError as error:
-            logging.error("can not find that fb {0}".format(fb_name))
-            logging.error(error)
+            logger.error("can not find that fb {0}".format(fb_name))
+            logger.error(error)
 
         return fb_element
 
@@ -43,7 +45,7 @@ class Configuration:
         return fb_name in self.fb_dictionary
 
     def create_virtualized_fb(self, fb_name, fb_resource: FBResources, ua_update):
-        logging.info("creating a virtualized (opc-ua) fb {0}...".format(fb_name))
+        logger.info("creating a virtualized (opc-ua) fb {0}...".format(fb_name))
 
         self.create_fb(fb_name, fb_resource, monitor=True)
         # sets the ua variables update method
@@ -51,12 +53,12 @@ class Configuration:
         fb2update.ua_variables_update = ua_update
 
     def create_fb(self, fb_name, fb_resource: FBResources, monitor=False):
-        logging.info("creating a new fb...")
+        logger.info("creating a new fb...")
 
         exists_fb = fb_resource.exists_fb()
         if not exists_fb:
             # Downloads the fb definition and python code
-            logging.info("fb doesnt exists, needs to be downloaded ...")
+            logger.info("fb doesnt exists, needs to be downloaded ...")
             fb_resource.download_fb()
 
         fb_definition, fb_obj = fb_resource.import_fb()
@@ -81,19 +83,19 @@ class Configuration:
                             if xmlVar.get("Name") is not None:
                                 xmlArgs.append(xmlVar.get("Name").lower())
                             else:
-                                logging.error(
+                                logger.error(
                                     'Could not find mandatory "Name" attribute for variable. Please check {0}.fbt'.format(
                                         fb_name
                                     )
                                 )
 
                 if scheduleArgs != xmlArgs:
-                    logging.warning(
+                    logger.warning(
                         "Argument names for schedule function of {0} do not match definition in {0}.fbt".format(
                             fb_name
                         )
                     )
-                    logging.warning(
+                    logger.warning(
                         "Ensure your variable arguments are the same as the input variables and in the same order"
                     )
 
@@ -104,16 +106,15 @@ class Configuration:
                 fb_element = fb.FB(fb_name, fb_resource, fb_obj)
 
             self.set_fb(fb_name, fb_element)
-            logging.info(
+            logger.info(
                 "created fb type: {0}, instance: {1}".format(
                     fb_resource.fb_type, fb_name
                 )
             )
-            logging.error("List of existing blocks: %s" % self.fb_dictionary)
             # returns the both elements
             return fb_element, fb_definition
         else:
-            logging.error(
+            logger.error(
                 "can not create the fb type: {0}, instance: {1}".format(
                     fb_resource.fb_type, fb_name
                 )
@@ -121,7 +122,7 @@ class Configuration:
             return None, None
 
     def create_connection(self, source, destination):
-        logging.info("creating a new connection...")
+        logger.info("creating a new connection...")
 
         # Split on last '.' to separate fb name and connection
         source_attr = source.rsplit(sep=".", maxsplit=1)
@@ -138,12 +139,12 @@ class Configuration:
         source_fb.add_output_connection(source_port_name, connection)
         destination_fb.add_input_connection(destination_port_name, connection)
 
-        logging.info(
+        logger.info(
             "connection created between {0} and {1}".format(source, destination)
         )
 
     def create_watch(self, source, destination):
-        logging.info("creating a new watch...")
+        logger.info("creating a new watch...")
 
         source_attr = source.rsplit(sep=".", maxsplit=1)
         source_fb = self.get_fb(source_attr[0])
@@ -153,15 +154,15 @@ class Configuration:
             source_fb.set_attr(source_name, set_watch=True)
         except AttributeError as error:
             # check if the return if None
-            logging.error(error)
-            logging.error(
+            logger.error(error)
+            logger.error(
                 "don't forget to delete the watch when you delete a function block"
             )
 
-        logging.info("watch created between {0} and {1}".format(source, destination))
+        logger.info("watch created between {0} and {1}".format(source, destination))
 
     def delete_watch(self, source, destination):
-        logging.info("deleting a new watch...")
+        logger.info("deleting a new watch...")
 
         source_attr = source.split(sep=".")
         source_fb = self.get_fb(source_attr[0])
@@ -171,26 +172,24 @@ class Configuration:
             source_fb.set_attr(source_name, set_watch=False)
         except AttributeError as error:
             # check if the return if None
-            logging.error(error)
-            logging.error(
+            logger.error(error)
+            logger.error(
                 "don't forget to delete the watch when you delete a function block"
             )
 
-        logging.info("watch deleted between {0} and {1}".format(source, destination))
+        logger.info("watch deleted between {0} and {1}".format(source, destination))
 
     def write_connection(self, source_value, destination):
-        logging.error("writing a connection...")
-        logging.error(f"SRC: {source_value} DST {destination}")
+        logger.info(f"Writing constant {source_value} to {destination}")
         destination_attr = destination.rsplit(sep=".", maxsplit=1)
         destination_fb = self.get_fb(destination_attr[0])
         destination_name = destination_attr[1]
 
         v_type, value, is_watch = destination_fb.read_attr(destination_name)
-        logging.error("Event recived!!!!!!!!!!!!!!!!!")
 
         # Verifies if is to write an event
         if source_value == "$e":
-            logging.info("writing an event...")
+            logger.info("writing an event...")
             if value is not None:
                 # If the value is not None increment
                 destination_fb.push_event(destination_name, value + 1)
@@ -200,22 +199,22 @@ class Configuration:
 
         # Writes a hardcoded value
         else:
-            logging.info("writing a hardcoded value...")
+            logger.info("writing a hardcoded value...")
             value_to_set = self.convert_type(source_value, v_type)
-            logging.error(
+            logger.info(
                 f"Data conversion:\n SRC: {source_value}\nType:{v_type}\n Converted value: {value_to_set} DST:{destination_name}"
             )
 
             destination_fb.set_attr(destination_name, value_to_set)
 
-        logging.info(
+        logger.info(
             "connection ({0}) configured with the value {1}".format(
                 destination, source_value
             )
         )
 
     def read_watches(self, start_time):
-        logging.info("reading watches...")
+        logger.info("reading watches...")
 
         resources_xml = ETree.Element("Resource", {"name": self.config_id})
 
@@ -229,7 +228,7 @@ class Configuration:
         return resources_xml, fb_watches_len
 
     def start_work(self):
-        logging.info("starting the fb flow...")
+        logger.info("starting the fb flow...")
         for fb_name, fb_element in self.fb_dictionary.items():
             if fb_name != "START":
                 fb_element.start()
@@ -242,7 +241,7 @@ class Configuration:
         self.get_fb("START").update_outputs(outputs)
 
     def stop_work(self):
-        logging.info("stopping the fb flow...")
+        logger.info("stopping the fb flow...")
         for fb_name, fb_element in self.fb_dictionary.items():
             if fb_name != "START":
                 fb_element.stop()
@@ -259,7 +258,7 @@ class Configuration:
             if len(parts) == 2:
                 value_type, value = parts
             else:
-                logging.error(
+                logger.error(
                     "Incorrect constant formatting! use <Type>#<value> like INT#8500"
                 )
 

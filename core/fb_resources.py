@@ -7,6 +7,8 @@ from data_model_fboot import utils
 
 from time import perf_counter
 
+logger = logging.getLogger("dinasore")
+
 
 class FBResources:
     def __init__(self, fb_type: str, root_path: str):
@@ -25,7 +27,7 @@ class FBResources:
         self.xml_tree = self._fetch_xml()
 
     def import_fb(self):
-        logging.info("importing fb python file and definition file...")
+        logger.info("importing fb python file and definition file...")
         root = None
         fb_obj = None
 
@@ -46,7 +48,7 @@ class FBResources:
             # py_fb = importlib.import_module(self.fb_type)
             # sys.path.pop(0)
             end = perf_counter()
-            logging.info(f"import_time: {end-start}")
+            logger.info(f"import_time: {end-start}")
             # Gets the running fb method
             fb_class = getattr(py_fb, self.fb_type)
             # Instance the fb class
@@ -57,35 +59,35 @@ class FBResources:
             root = tree.getroot()
 
         except ModuleNotFoundError as error:
-            logging.error("can not import the module (check fb_type.py nomenclature)")
-            logging.error(error)
+            logger.error("can not import the module (check fb_type.py nomenclature)")
+            logger.error(error)
 
         except AttributeError as error:
-            logging.error(
+            logger.error(
                 "can not find the fb method declaration (check if fb_type.py = def fb_type(...):)"
             )
-            logging.error(error)
+            logger.error(error)
 
         except FileNotFoundError as error:
-            logging.error("can not find the .fbt file (check .fbt name = fb_type.fbt)")
-            logging.error(error)
+            logger.error("can not find the .fbt file (check .fbt name = fb_type.fbt)")
+            logger.error(error)
 
         except Exception as ex:
-            logging.error(ex)
+            logger.error(ex)
 
         else:
-            logging.info("fb definition (xml) imported from: {0}".format(self.fbt_path))
-            logging.info("python file imported from: {0}".format(self.py_path))
+            logger.info("fb definition (xml) imported from: {0}".format(self.fbt_path))
+            logger.info("python file imported from: {0}".format(self.py_path))
 
             # Checking specified data types
             for event in tree.findall(".//Event"):
                 if event.get("Type") is not None and event.get("Type") != "Event":
-                    logging.error(
+                    logger.error(
                         'Wrong data type "{0}" specified for event {1}'.format(
                             event.get("Type"), event.get("Name")
                         )
                     )
-                    logging.error("Defaulting to Event")
+                    logger.error("Defaulting to Event")
                     event.set("Type", "Event")
 
             for varDec in tree.findall(".//VarDeclaration"):
@@ -93,28 +95,28 @@ class FBResources:
                     varDec.get("Type") is not None
                     and varDec.get("Type") not in utils.XML_4DIAC
                 ):
-                    logging.error(
+                    logger.error(
                         'Unknown data type "{0}" assigned to variable {1}'.format(
                             varDec.get("Type"), varDec.get("Name")
                         )
                     )
-                    logging.error("Defaulting to String")
+                    logger.error("Defaulting to String")
                     varDec.set("Type", "String")
 
         return root, fb_obj
 
     def _fetch_xml(self):
-        logging.info("getting the xml fb definition...")
+        logger.info("getting the xml fb definition...")
         tree = None
 
         try:
             # Reads the xml
             tree = ETree.parse(self.fbt_path)
         except FileNotFoundError as error:
-            logging.error("can not find the .fbt file (check .fbt name = fb_type.fbt)")
-            logging.error(error)
+            logger.error("can not find the .fbt file (check .fbt name = fb_type.fbt)")
+            logger.error(error)
         else:
-            logging.info("fb definition (xml) imported from: {0}".format(self.fbt_path))
+            logger.info("fb definition (xml) imported from: {0}".format(self.fbt_path))
 
         return tree
 

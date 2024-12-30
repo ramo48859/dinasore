@@ -6,6 +6,8 @@ from data_model_fboot import utils
 import os
 import logging
 
+logger = logging.getLogger("dinasore")
+
 
 class UaMethod:
     def __init__(self, ua_server, ua_folder, xml_root):
@@ -116,7 +118,7 @@ class UaMethod:
         for index in range(len(info_string)):
             if index == 0 or index == len(info_string) - 1:
                 if info_string[index] not in "[]":
-                    logging.warning("{0} is missing square brackets".format(info))
+                    logger.warning("{0} is missing square brackets".format(info))
                     return False
             else:
                 info_string_list += info_string[index]
@@ -126,7 +128,7 @@ class UaMethod:
         for element in info_array:
             element_chunks = element.split(".")  # FB_NAME.FB_VAR
             if len(element_chunks) != 2:
-                logging.warning(
+                logger.warning(
                     "Inputs/Outputs must be expressed in the following syntax: <FB_NAME.FB_PROPERTY>"
                 )
                 return False

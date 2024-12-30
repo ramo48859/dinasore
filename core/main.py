@@ -88,7 +88,7 @@ def setup_logging(level):
         queue_handler
     )  # Create a separate logger for your application
 
-    app_logger = logging.getLogger("my_app")
+    app_logger = logger
     app_logger.setLevel(logging.DEBUG)  # Enable debug messages for your app
     app_logger.propagate = False
     app_logger.addHandler(queue_handler)
@@ -216,7 +216,7 @@ if __name__ == "__main__":
         while True:
             hand.handle_client()
     except KeyboardInterrupt:
-        logging.info("interrupted server")
+        logger.info("interrupted server")
         m.manager_ua.stop_ua()
         hand.stop_server()
         sys.exit(0)

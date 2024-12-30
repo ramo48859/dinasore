@@ -11,6 +11,8 @@ from fb_resources import FBResources
 
 # This sniffer class looks for changes in the function block functions
 
+logger = logging.getLogger("dinasore")
+
 
 class Sniffer(threading.Thread):
     def __init__(self, fb_resource: FBResources, message_queue):
@@ -21,7 +23,7 @@ class Sniffer(threading.Thread):
         self.message_queue = message_queue
         self.fname = pathlib.Path(self.py_path)
         if not self.fname.exists():
-            logging.error("Could not find the file {0}".format(self.py_path))
+            logger.error("Could not find the file {0}".format(self.py_path))
             sys.exit()
         else:
             # Get latest modification time to the file
@@ -44,7 +46,7 @@ class Sniffer(threading.Thread):
             self.fb_obj = fb_class()
 
     def run(self):
-        logging.info("Sniffer for {0} has been activated".format(self.fb_type))
+        logger.info("Sniffer for {0} has been activated".format(self.fb_type))
         while self.alive:
             nmtime = datetime.datetime.fromtimestamp(self.fname.stat().st_mtime)
             if nmtime > self.mtime:
@@ -57,7 +59,7 @@ class Sniffer(threading.Thread):
                 self.fb_obj = fb_class()
                 # Send new object to fb thread
                 self.message_queue.put(self.fb_obj)
-                logging.info(
+                logger.info(
                     "Changes to {0} detected, updating".format(self.fb_type + ".py")
                 )
 

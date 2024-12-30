@@ -4,6 +4,8 @@ import uuid
 
 from fb_resources import FBResources
 
+logger = logging.getLogger("dinasore")
+
 
 class UaObject:
     class InvalidFbtState(Exception):
@@ -63,7 +65,7 @@ class UaObject:
             self.populate_vars_folder()
             self.populate_events_folder()
         except self.InvalidFbtState:
-            logging.error(
+            logger.error(
                 "Invalid function block definition, check {0}.fbt for mistakes".format(
                     self.fb_name
                 )
@@ -164,10 +166,10 @@ class UaObject:
 
             except Exception as error:
                 # reports the error
-                logging.warning("Error writing the value in the opc-ua server.")
-                logging.warning(error)
+                logger.warning("Error writing the value in the opc-ua server.")
+                logger.warning(error)
                 if v_type == "STRING":
                     # writes the value as a string
                     var_ua.set_value(str(value))
                     # writes the solution
-                    logging.warning("Error solved writing the variable as string.")
+                    logger.warning("Error solved writing the variable as string.")

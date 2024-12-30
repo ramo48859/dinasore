@@ -10,6 +10,8 @@ import sys
 import shutil
 import glob
 
+logger = logging.getLogger("dinasore")
+
 
 class Manager:
     """
@@ -35,8 +37,8 @@ class Manager:
         try:
             fb_element = self.config_dictionary[config_id]
         except KeyError as error:
-            logging.error("can not find that configuration (4DIAC resource)")
-            logging.error(error)
+            logger.error("can not find that configuration (4DIAC resource)")
+            logger.error(error)
 
         return fb_element
 
@@ -50,8 +52,8 @@ class Manager:
         request_id = element.attrib["ID"]
         xml = None
 
-        logging.info(f"Parsing request: {xml_data}")
-        logging.info(f"Action: {action},ID:{request_id}")
+        logger.info(f"Parsing request: {xml_data}")
+        logger.info(f"Action: {action},ID:{request_id}")
 
         if action == "CREATE":
             self.requests.append(xml_data)
@@ -103,14 +105,14 @@ class Manager:
                 # Reads values from a watch
                 if child.tag == "Watches":
                     xml = ETree.Element("Watches")
-                    logging.info(f"Reading watches: {xml}")
+                    logger.info(f"Reading watches: {xml}")
                     # Gets all the watches from all the xml_data
                     for config_id, config in self.config_dictionary.items():
                         resource_xml, resource_len = config.read_watches(
                             self.start_time
                         )
 
-                        logging.info(
+                        logger.info(
                             f"config_id:{config_id}, config:{config}, resource_xml:{resource_xml}"
                         )
                         # Appends only if has anything
@@ -201,8 +203,8 @@ class Manager:
                 if child.tag == "Watch":
                     watch_source = child.attrib["Source"]
                     watch_destination = child.attrib["Destination"]
-                    logging.info(f"watch_src: {watch_source}")
-                    logging.info(f"watch_dst: {watch_destination}")
+                    logger.info(f"watch_src: {watch_source}")
+                    logger.info(f"watch_dst: {watch_destination}")
                     self.get_config(config_id).create_watch(
                         watch_source, watch_destination
                     )
