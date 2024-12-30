@@ -1,8 +1,12 @@
 import logging
+import logging.handlers
 import os
 import sys
 import argparse
 import glob
+import queue
+import atexit
+import json
 
 sys.path.append(os.path.join(os.path.dirname(sys.path[0])))
 
@@ -14,6 +18,85 @@ sys.path.insert(0, os.path.join(os.getcwd(), "resources"))
 
 from communication import tcp_server
 from core import manager
+
+
+logger = logging.getLogger("dinasore")  # __name__ is a common choice
+
+
+def setup_logging(level):
+    # Create a queue for logging
+    log_queue = queue.Queue(-1)
+
+    # Create QueueHandler
+    queue_handler = logging.handlers.QueueHandler(log_queue)
+
+    # Define the JSON formatter
+    class MyJSONFormatter(logging.Formatter):
+        def format(self, record):
+            record.message = record.getMessage()
+            record.asctime = self.formatTime(record, self.datefmt)
+            log_record = {
+                "level": record.levelname,
+                "message": record.message,
+                "timestamp": record.asctime,
+                "logger": record.name,
+                "module": record.module,
+                "line": record.lineno,
+                "thread_name": record.threadName,
+            }
+            return json.dumps(log_record)
+
+    pretty_formater = logging.Formatter(
+        "[%(levelname)-7s|%(asctime)s.%(msecs)03d|%(threadName)s] %(message)s",
+        datefmt="%Y-%m-%dT%H:%M:%S",
+    )
+
+    # Create stderr handler
+    stderr_handler = logging.StreamHandler()
+    stderr_handler.setLevel(logging.WARNING)
+    stderr_handler.setFormatter(pretty_formater)
+
+    # Create a file logger
+    file_handler = logging.FileHandler("resources/error_list.log", mode="w")
+    file_handler.setLevel(level)
+    file_handler.setFormatter(pretty_formater)
+
+    # Create JSON file handler
+    file_json_handler = logging.handlers.RotatingFileHandler(
+        "resources/error_list.jsonl", maxBytes=10000, backupCount=3, mode="w"
+    )
+    file_json_handler.setLevel(level)
+    file_json_formatter = MyJSONFormatter()
+    file_json_handler.setFormatter(file_json_formatter)
+
+    # Create QueueListener and attach handlers
+    # respect_handler_level is important otherwise the levels of the listeners are ignored!
+    queue_listener = logging.handlers.QueueListener(
+        log_queue,
+        stderr_handler,
+        file_json_handler,
+        file_handler,
+        respect_handler_level=True,
+    )
+
+    # Set up the root logger
+    root_logger = logging.getLogger()
+    root_logger.setLevel(
+        logging.WARNING
+    )  # Suppress debug messages from third-party libraries
+    root_logger.addHandler(
+        queue_handler
+    )  # Create a separate logger for your application
+
+    app_logger = logging.getLogger("my_app")
+    app_logger.setLevel(logging.DEBUG)  # Enable debug messages for your app
+    app_logger.propagate = False
+    app_logger.addHandler(queue_handler)
+
+    # Start the QueueListener
+    queue_listener.start()
+    atexit.register(queue_listener.stop)
+
 
 if __name__ == "__main__":
     log_levels = {
@@ -118,14 +201,7 @@ if __name__ == "__main__":
     ##############################################################
 
     # Configure the logging output
-    log_path = os.path.join(os.path.dirname(sys.path[0]), "resources", "error_list.log")
-    if os.path.isfile(log_path):
-        os.remove(log_path)
-    logging.basicConfig(
-        filename=log_path,
-        level=log_level,
-        format="[%(asctime)s][%(levelname)s][%(threadName)s] %(message)s",
-    )
+    setup_logging(log_level)
 
     # creates the 4diac manager
     m = manager.Manager(monitor=monitor)
