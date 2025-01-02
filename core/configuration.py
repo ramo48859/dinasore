@@ -3,6 +3,7 @@ import logging
 import inspect
 from datetime import datetime
 import os
+from typing import List
 
 from core import fb
 from core import fb_interface
@@ -67,11 +68,11 @@ class Configuration:
         if fb_definition is not None:
             # Checking order and number or arguments of schedule function
             # Logs warning if order and number are not the same
-            scheduleArgs = inspect.getargspec(fb_obj.schedule).args
-            if len(scheduleArgs) > 3:
-                scheduleArgs = scheduleArgs[3:]
+            scheduleArgs = list(inspect.signature(fb_obj.schedule).parameters.keys())
+            if len(scheduleArgs) > 2:
+                scheduleArgs = scheduleArgs[2:]
                 scheduleArgs = [i.lower() for i in scheduleArgs]
-                xmlArgs = []
+                xmlArgs: List[str] = []
 
                 for child in fb_definition:
                     # avoid error due to 'VersionInfo' or
@@ -88,16 +89,19 @@ class Configuration:
                                         fb_name
                                     )
                                 )
+                if len(scheduleArgs) != len(xmlArgs):
+                    logger.error(f""""Arguments of schedule(...) in {fb_name}.py have length {len(scheduleArgs)}, whereas
+                                      inputs of defined in {fb_name}.fbt have length {len(xmlArgs)}""")
 
-                if scheduleArgs != xmlArgs:
+                elif scheduleArgs != xmlArgs:
                     logger.warning(
-                        "Argument names for schedule function of {0} do not match definition in {0}.fbt".format(
-                            fb_name
-                        )
+                        f"Argument names for schedule function of {fb_name} do not match definition in {fb_name}.fbt"
                     )
-                    logger.warning(
-                        "Ensure your variable arguments are the same as the input variables and in the same order"
-                    )
+                    for py_arg, xml_arg in zip(scheduleArgs, xmlArgs):
+                        if py_arg != xml_arg:
+                            logger.warning(
+                                f"input {fb_name}.{xml_arg} is named {py_arg} in python implementation"
+                            )
 
             # if it is a real FB, not a hidden one
             if monitor:

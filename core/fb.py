@@ -55,6 +55,7 @@ class FB(threading.Thread, fb_interface.FBInterface):
 
             logger.info(f"running fb with inputs:({inputs})")
             logger.info(f"len of inputs: {len(inputs)}")
+            event = inputs[0]
 
             try:
                 outputs = self.fb_obj.schedule(*inputs)
@@ -83,7 +84,7 @@ class FB(threading.Thread, fb_interface.FBInterface):
 
                 if outputs is None:
                     logger.error(
-                        "Outputs are null, please check {0}.py".format(self.fb_name)
+                        f"Outputs are null, please check {self.fb_type}.py if event {event} is handled"
                     )
                     # Stops the thread
                     logger.info("stopping the fb work...")
