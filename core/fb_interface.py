@@ -589,6 +589,9 @@ class FBInterface:
     def init_is_connected(self) -> bool:
         return "INIT" in self.input_connections
 
+    def has_event_input(self, input: str) -> bool:
+        return input in self.input_events
+
     def push_event(self, event_name, event_value):
         if event_value is not None:
             self.event_queue.append((event_name, event_value))

@@ -215,7 +215,11 @@ class UaManagerFboot(peer.UaPeer):
         # connect all unconnected INIT event inputs to START.COLD
         function_blocks = self.config.fb_dictionary
         for name, fb in function_blocks.items():
-            if not fb.init_is_connected() and fb.name != "START":
+            if (
+                not fb.init_is_connected()
+                and fb.has_event_input("INIT")
+                and fb.name != "START"
+            ):
                 self.config.create_connection("START.COLD", f"{fb.fb_name}.INIT")
 
     def parse_fbt(self, fb_resource: FBResources, fb_name: str):
