@@ -73,7 +73,7 @@ class Configuration:
                 scheduleArgs = scheduleArgs[2:]
                 scheduleArgs = [i.lower() for i in scheduleArgs]
                 xmlArgs: List[str] = []
-
+                type = fb_resource.fb_type
                 for child in fb_definition:
                     # avoid error due to 'VersionInfo' or
                     # 'Identifiction'
@@ -85,22 +85,20 @@ class Configuration:
                                 xmlArgs.append(xmlVar.get("Name").lower())
                             else:
                                 logger.error(
-                                    'Could not find mandatory "Name" attribute for variable. Please check {0}.fbt'.format(
-                                        fb_name
-                                    )
+                                    f'Could not find mandatory "Name" attribute for variable. Please check {type}.fbt'
                                 )
                 if len(scheduleArgs) != len(xmlArgs):
-                    logger.error(f""""Arguments of schedule(...) in {fb_name}.py have length {len(scheduleArgs)}, whereas
-                                      inputs of defined in {fb_name}.fbt have length {len(xmlArgs)}""")
+                    logger.error(f""""Arguments of schedule(...) in {type}.py have length {len(scheduleArgs)}, whereas
+                                      inputs of defined in {type}.fbt have length {len(xmlArgs)}""")
 
                 elif scheduleArgs != xmlArgs:
                     logger.warning(
-                        f"Argument names for schedule function of {fb_name} do not match definition in {fb_name}.fbt"
+                        f'Argument names for schedule function of "{type}" do not match definition in {type}.fbt'
                     )
                     for py_arg, xml_arg in zip(scheduleArgs, xmlArgs):
                         if py_arg != xml_arg:
                             logger.warning(
-                                f"input {fb_name}.{xml_arg} is named {py_arg} in python implementation"
+                                f'input "{type}.{xml_arg}" is named "{py_arg}" in python implementation'
                             )
 
             # if it is a real FB, not a hidden one
