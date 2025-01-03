@@ -1,4 +1,5 @@
 __pycache__
 resources/data_model.fboot
-resources/error_list.log
+resources/error_list*
+*.prof
 cache/
