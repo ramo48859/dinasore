@@ -4,6 +4,7 @@ from xml.etree import ElementTree as ETree
 import logging
 import time
 import datetime
+from queue import Queue
 
 from fb_resources import FBResources
 
@@ -281,7 +282,7 @@ class FBInterface:
         self.monitor_fb = monitor
         self.stop_thread = False
 
-        self.event_queue = []
+        self.event_queue = Queue()
 
         """
         Each events and variables dictionary contains:
@@ -595,16 +596,16 @@ class FBInterface:
 
     def push_event(self, event_name, event_value):
         if event_value is not None:
-            self.event_queue.append((event_name, event_value))
+            self.event_queue.put((event_name, event_value))
             # Updates the event value
             self.set_attr(event_name, new_value=event_value)
             # Sets the new event
             self.new_event.set()
 
     def pop_event(self):
-        if len(self.event_queue) > 0:
+        if self.event_queue.qsize() > 0:
             # pop event
-            event_name, event_value = self.event_queue.pop()
+            event_name, event_value = self.event_queue.get()
 
             if self.monitor_fb:
                 ############################################
@@ -620,7 +621,7 @@ class FBInterface:
             return event_name, event_value
 
     def wait_event(self):
-        while len(self.event_queue) <= 0:
+        while self.event_queue.qsize() <= 0:
             self.new_event.wait()
             # Clears new_event to wait for new events
             self.new_event.clear()
