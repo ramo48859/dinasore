@@ -581,12 +581,26 @@ class FBInterface:
             self.output_connections[value_name] = conns
 
     def add_input_connection(self, value_name, connection):
-        if value_name not in self.input_connections:
-            self.input_connections[value_name] = connection
+        #multiple input events are allowed
+        if value_name in self.input_events:
+            if value_name in self.input_connections:
+                conns = self.input_connections[value_name]
+                conns.append(connection)
+
+            # If don't exists any connection with that value
+            else:
+                conns = [connection]
+                self.input_connections[value_name] = conns
+        # only one connection is allowed per input
+        elif value_name in self.input_vars:
+            if value_name not in self.input_connections:
+                self.input_connections[value_name] = connection
+            else:
+                raise ValueError(
+                    "Two connection assigned to one input, which is not possible"
+                )
         else:
-            raise ValueError(
-                "Two connection assigned to one input, which is not possible"
-            )
+            raise ValueError(f"Cannot create {connection}")
 
     def init_is_connected(self) -> bool:
         return "INIT" in self.input_connections
