@@ -93,6 +93,11 @@ def setup_logging(level):
     app_logger.propagate = False
     app_logger.addHandler(queue_handler)
 
+    wlog = logging.getLogger("Watch")
+    wlog.setLevel(logging.WARNING)
+    wlog.propagate = False
+    wlog.addHandler(queue_handler)
+
     # Start the QueueListener
     queue_listener.start()
     atexit.register(queue_listener.stop)

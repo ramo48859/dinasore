@@ -11,6 +11,7 @@ from core.fb_resources import FBResources
 from data_model_fboot.utils import create_fb_index
 
 logger = logging.getLogger("dinasore")
+wlog = logging.getLogger("Watch")
 
 
 class Configuration:
@@ -216,7 +217,7 @@ class Configuration:
         )
 
     def read_watches(self, start_time):
-        logger.info("reading watches...")
+        wlog.info("reading watches...")
 
         resources_xml = ETree.Element("Resource", {"name": self.config_id})
 

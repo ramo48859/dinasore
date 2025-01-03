@@ -11,6 +11,7 @@ import shutil
 import glob
 
 logger = logging.getLogger("dinasore")
+wlog = logging.getLogger("watch")
 
 
 class Manager:
@@ -52,10 +53,9 @@ class Manager:
         request_id = element.attrib["ID"]
         xml = None
 
-        logger.info(f"Parsing request: {xml_data}")
-        logger.info(f"Action: {action},ID:{request_id}")
-
         if action == "CREATE":
+            logger.info(f"Parsing CREATE request: {xml_data}")
+            logger.info(f"ID:{request_id}")
             self.requests.append(xml_data)
 
             ##############################################################
@@ -105,15 +105,11 @@ class Manager:
                 # Reads values from a watch
                 if child.tag == "Watches":
                     xml = ETree.Element("Watches")
-                    logger.info(f"Reading watches: {xml}")
+                    wlog.info(f"Reading watches: {xml}")
                     # Gets all the watches from all the xml_data
                     for config_id, config in self.config_dictionary.items():
                         resource_xml, resource_len = config.read_watches(
                             self.start_time
-                        )
-
-                        logger.info(
-                            f"config_id:{config_id}, config:{config}, resource_xml:{resource_xml}"
                         )
                         # Appends only if has anything
                         if resource_len > 0:
@@ -125,6 +121,7 @@ class Manager:
                         xml = None
 
         elif action == "KILL":
+            logger.info("Parsing KILL request")
             # Iterate over the list of children
             for child in element:
                 # Kill a configuration (could be a fb)
@@ -146,6 +143,7 @@ class Manager:
                 pass
 
         elif action == "DELETE":
+            logger.info("Parsing DELETE request")
             ##############################################################
             ## remove all files in monitoring folder
             monitoring_path = os.path.join(
@@ -195,7 +193,7 @@ class Manager:
         request_id = element.attrib["ID"]
 
         self.requests.append(xml_data)
-
+        logger.info(f"Parsing configuration xml: {xml_data}")
         if action == "CREATE":
             # Iterate over the list of children
             for child in element:

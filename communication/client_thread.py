@@ -21,11 +21,11 @@ class ClientThread(threading.Thread):
             # Receive the data in small chunks and retransmit it
             while True:
                 data = self.connection.recv(2048)
-                logger.info("received {0}".format(data))
+                logger.debug("received {0}".format(data))
 
                 if data:
                     response = self.parse_request(data)
-                    logger.info("sending response {0}".format(response))
+                    logger.debug("sending response {0}".format(response))
                     self.connection.sendall(response)
 
                 else:
@@ -49,13 +49,11 @@ class ClientThread(threading.Thread):
         config_id_size = int(data[1:3].hex(), 16)
 
         if config_id_size == 0:
-            logger.info("general Request:")
             data_str = data[6:].decode("utf-8")
             data_str = self.remove_service_symbols(data_str)
             response = self.config_m.parse_general(data_str)
         else:
             config_id = data[3 : config_id_size + 3].decode("utf-8")
-            logger.info(f"configuration Request: config_id:{config_id}")
             data_str = data[config_id_size + 3 + 3 :].decode("utf-8")
             data_str = self.remove_service_symbols(data_str)
             response = self.config_m.parse_configuration(data_str, config_id)

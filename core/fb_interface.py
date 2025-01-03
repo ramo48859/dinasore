@@ -8,6 +8,7 @@ import datetime
 from fb_resources import FBResources
 
 logger = logging.getLogger("dinasore")
+wlog = logging.getLogger("Watch")
 
 
 class FBInterface:
@@ -702,9 +703,9 @@ class FBInterface:
             v_type, value, is_watch = self.read_attr(var_name)
             if is_watch and (value is not None):
                 port = ETree.Element("Port", {"name": var_name})
-                logger.info(f"vtype is: {v_type}")
-                logger.info(f"value is: {value}")
-                logger.info(f"is_watch: {is_watch}")
+                wlog.debug(f"vtype is: {v_type}")
+                wlog.debug(f"value is: {value}")
+                wlog.debug(f"is_watch: {is_watch}")
                 # in 4diac3 strings must start with '\''
                 if v_type == "STRING":
                     value_string = "'" + str(value) + "'"
