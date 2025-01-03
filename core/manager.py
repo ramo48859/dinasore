@@ -230,10 +230,12 @@ class Manager:
             # Iterate over the list of children
             for child in element:
                 # Write a connection with value
-                if child.tag == "Connection" and child.attrib["Source"] == "$e":
+                if child.tag == "Connection" and (
+                    child.attrib["Source"] == "$e" or "force" in child.attrib
+                ):
                     connection_destination = child.attrib["Destination"]
                     self.get_config(config_id).write_connection(
-                        "$e", connection_destination
+                        child.attrib["Source"], connection_destination
                     )
 
         response = self.build_response(request_id, None)
