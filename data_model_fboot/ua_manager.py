@@ -132,7 +132,7 @@ class UaManagerFboot(peer.UaPeer):
     def generate_function_blocks(self, lines):
         for line in lines:
             # Remove start fb from line
-            chunks = line.split(";")
+            chunks = line.split(";",maxsplit = 1)
             if len(chunks) != 2:
                 raise self.InvalidFbootState
             xml_element = ETree.fromstring(chunks[1])
@@ -150,7 +150,7 @@ class UaManagerFboot(peer.UaPeer):
     def generate_connections(self, lines):
         for line in lines:
             # Remove start fb from line
-            chunks = line.split(";")
+            chunks = line.split(";",maxsplit = 1)
             if len(chunks) != 2:
                 raise self.InvalidFbootState
             xml_element = ETree.fromstring(chunks[1])
