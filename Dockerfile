@@ -1,5 +1,5 @@
 # Stage 1: Builder stage (handles dependencies and credentials)
-FROM python:3.10-slim as builder
+FROM python:3.10-slim AS builder
 
 # Install system dependencies (git and openssh-client for SSH)
 RUN apt-get update && apt-get install -y --no-install-recommends git openssh-client && \
@@ -27,15 +27,8 @@ COPY resources ./resources
 COPY pyproject.toml ./
 COPY uv.lock ./
 
-# Copy your SSH key into the container
-COPY id_ed25519 /root/.ssh/id_ed25519
-RUN chmod 600 /root/.ssh/id_ed25519
-
-# Debug SSH connection (optional)
-#RUN ssh -T git@github.com
-
 # Install dependencies using UV sync with pyproject.toml
-RUN uv sync --frozen --verbose
+RUN --mount=type=ssh uv sync --frozen --verbose
 
 # Stage 2: Final stage (clean image without credentials)
 FROM python:3.10-slim
