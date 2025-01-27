@@ -1,6 +1,3 @@
 [submodule "resources/dinasore_function_blocks"]
 	path = resources/dinasore_function_blocks
 	url = https://github.com/ramo48859/dinasore_function_blocks.git
-[submodule "resources/energy_management_system"]
-	path = resources/energy_management_system
-	url = https://github.com/ramo48859/energy_management_system.git
