@@ -1,0 +1,42 @@
+# Ignore root-level files and directories
+.git
+.venv
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.sqlite3
+*.log
+*.env
+*.swp
+*.bak
+*.tmp
+.DS_Store
+
+# Ignore specific files and directories in the `resources` subdirectory
+resources/**/.git
+resources/**/.venv
+resources/**/__pycache__
+resources/**/*.pyc
+resources/**/*.pyo
+resources/**/*.pyd
+resources/**/*.db
+resources/**/*.sqlite3
+resources/**/*.log
+resources/**/*.env
+resources/**/*.swp
+resources/**/*.bak
+resources/**/*.tmp
+resources/**/.DS_Store
+
+# Ignore other unnecessary files
+**/node_modules
+**/dist
+**/build
+**/coverage
+**/.mypy_cache
+**/.pytest_cache
+**/.ruff_cache
+**/.vscode
+**/.idea

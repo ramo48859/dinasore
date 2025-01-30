@@ -3,9 +3,10 @@ import logging
 import sys
 from communication import client_thread
 
+logger = logging.getLogger("dinasore")
+
 
 class TcpServer:
-
     def __init__(self, ip, port, limit_connections, config_m):
         self.config_m = config_m
 
@@ -14,7 +15,7 @@ class TcpServer:
 
         # Bind the socket to the port
         server_address = (ip, port)
-        logging.info('starting up on %s port %s' % server_address)
+        logger.info("starting up on %s port %s" % server_address)
 
         # Reuse the socket address
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -22,8 +23,8 @@ class TcpServer:
         try:
             self.sock.bind(server_address)
         except socket.error as msg:
-            logging.error('bind failed.')
-            logging.error(msg)
+            logger.error("bind failed.")
+            logger.error(msg)
             sys.exit()
 
         # Listen for incoming connections
@@ -31,7 +32,7 @@ class TcpServer:
 
     def handle_client(self):
         # Wait for a connection
-        logging.info('waiting for a connection...')
+        logger.info("waiting for a connection...")
         connection, client_address = self.sock.accept()
 
         thread = client_thread.ClientThread(connection, client_address, self.config_m)

@@ -1,31 +1,42 @@
-from core import fb_resources
-from core import fb
-from core import fb_interface
 from xml.etree import ElementTree as ETree
 import logging
 import inspect
+from datetime import datetime
+import os
+from typing import List
 
+from core import fb
+from core import fb_interface
+from core.fb_resources import FBResources
+from data_model_fboot.utils import create_fb_index
+
+logger = logging.getLogger("dinasore")
+wlog = logging.getLogger("Watch")
 
 
 class Configuration:
-
     def __init__(self, config_id, config_type, monitor=None):
-
         self.monitor = monitor
 
         self.fb_dictionary = dict()
 
         self.config_id = config_id
 
-        self.create_fb('START', config_type)
+        # search function block on file system
+        root_fbs_path = os.path.join(os.getcwd(), "resources")
+        fb_dict = create_fb_index(root_fbs_path)
+        self.fb_dict = fb_dict
+
+        start_resource = FBResources(config_type, fb_dict[config_type])
+        self.create_fb("START", start_resource)
 
     def get_fb(self, fb_name):
         fb_element = None
         try:
             fb_element = self.fb_dictionary[fb_name]
         except KeyError as error:
-            logging.error('can not find that fb {0}'.format(fb_name))
-            logging.error(error)
+            logger.error("can not find that fb {0}".format(fb_name))
+            logger.error(error)
 
         return fb_element
 
@@ -35,85 +46,110 @@ class Configuration:
     def exists_fb(self, fb_name):
         return fb_name in self.fb_dictionary
 
-    def create_virtualized_fb(self, fb_name, fb_type, ua_update):
-        logging.info('creating a virtualized (opc-ua) fb {0}...'.format(fb_name))
+    def create_virtualized_fb(self, fb_name, fb_resource: FBResources, ua_update):
+        logger.info("creating a virtualized (opc-ua) fb {0}...".format(fb_name))
 
-        self.create_fb(fb_name, fb_type, monitor=True)
+        self.create_fb(fb_name, fb_resource, monitor=True)
         # sets the ua variables update method
         fb2update = self.get_fb(fb_name)
         fb2update.ua_variables_update = ua_update
 
-    def create_fb(self, fb_name, fb_type, monitor=False):
-        logging.info('creating a new fb...')
+    def create_fb(self, fb_name, fb_resource: FBResources, monitor=False):
+        logger.info("creating a new fb...")
 
-        fb_res = fb_resources.FBResources(fb_type)
-
-        exists_fb = fb_res.exists_fb()
+        exists_fb = fb_resource.exists_fb()
         if not exists_fb:
             # Downloads the fb definition and python code
-            logging.info('fb doesnt exists, needs to be downloaded ...')
-            fb_res.download_fb()
+            logger.info("fb doesnt exists, needs to be downloaded ...")
+            fb_resource.download_fb()
 
-        fb_definition, fb_obj = fb_res.import_fb()
+        fb_definition, fb_obj = fb_resource.import_fb()
 
         # check if if happened any importing error
         if fb_definition is not None:
-
             # Checking order and number or arguments of schedule function
-            # Logs warning if order and number are not the same 
-            scheduleArgs = inspect.getargspec(fb_obj.schedule).args
-            if len(scheduleArgs) > 3:
-                scheduleArgs = scheduleArgs[3:]
+            # Logs warning if order and number are not the same
+            scheduleArgs = list(inspect.signature(fb_obj.schedule).parameters.keys())
+            if len(scheduleArgs) > 2:
+                scheduleArgs = scheduleArgs[2:]
                 scheduleArgs = [i.lower() for i in scheduleArgs]
-                xmlArgs = []
+                xmlArgs: List[str] = []
+                type = fb_resource.fb_type
                 for child in fb_definition:
-                    inputvars = child.find('InputVars')
-                    varslist = inputvars.findall('VarDeclaration')
-                    for xmlVar in varslist:
-                        if xmlVar.get('Name') is not None:
-                            xmlArgs.append(xmlVar.get('Name').lower())
-                        else:
-                            logging.error('Could not find mandatory "Name" attribute for variable. Please check {0}.fbt'.format(fb_name))
+                    # avoid error due to 'VersionInfo' or
+                    # 'Identifiction'
+                    if child.tag == "InterfaceList":
+                        inputvars = child.find("InputVars")
+                        varslist = inputvars.findall("VarDeclaration")
+                        for xmlVar in varslist:
+                            if xmlVar.get("Name") is not None:
+                                xmlArgs.append(xmlVar.get("Name").lower())
+                            else:
+                                logger.error(
+                                    f'Could not find mandatory "Name" attribute for variable. Please check {type}.fbt'
+                                )
+                if len(scheduleArgs) != len(xmlArgs):
+                    logger.error(f""""Arguments of schedule(...) in {type}.py have length {len(scheduleArgs)}, whereas
+                                      inputs of defined in {type}.fbt have length {len(xmlArgs)}""")
 
-                if scheduleArgs != xmlArgs:
-                    logging.warning('Argument names for schedule function of {0} do not match definition in {0}.fbt'.format(fb_name))
-                    logging.warning('Ensure your variable arguments are the same as the input variables and in the same order')
+                elif scheduleArgs != xmlArgs:
+                    logger.warning(
+                        f'Argument names for schedule function of "{type}" do not match definition in {type}.fbt'
+                    )
+                    for py_arg, xml_arg in zip(scheduleArgs, xmlArgs):
+                        if py_arg != xml_arg:
+                            logger.warning(
+                                f'input "{type}.{xml_arg}" is named "{py_arg}" in python implementation'
+                            )
 
-            ## if it is a real FB, not a hidden one
+            # if it is a real FB, not a hidden one
             if monitor:
-                fb_element = fb.FB(fb_name, fb_type, fb_obj, fb_definition, monitor=self.monitor)
+                fb_element = fb.FB(fb_name, fb_resource, fb_obj, monitor=self.monitor)
             else:
-                fb_element = fb.FB(fb_name, fb_type, fb_obj, fb_definition)
+                fb_element = fb.FB(fb_name, fb_resource, fb_obj)
 
             self.set_fb(fb_name, fb_element)
-            logging.info('created fb type: {0}, instance: {1}'.format(fb_type, fb_name))
-            logging.error("List of existing blocks: %s" % self.fb_dictionary)
+            logger.info(
+                "created fb type: {0}, instance: {1}".format(
+                    fb_resource.fb_type, fb_name
+                )
+            )
             # returns the both elements
             return fb_element, fb_definition
         else:
-            logging.error('can not create the fb type: {0}, instance: {1}'.format(fb_type, fb_name))
+            logger.error(
+                "can not create the fb type: {0}, instance: {1}".format(
+                    fb_resource.fb_type, fb_name
+                )
+            )
             return None, None
 
     def create_connection(self, source, destination):
-        logging.info('creating a new connection...')
+        logger.info("creating a new connection...")
 
-        source_attr = source.split(sep='.')
-        destination_attr = destination.split(sep='.')
+        # Split on last '.' to separate fb name and connection
+        source_attr = source.rsplit(sep=".", maxsplit=1)
+        destination_attr = destination.rsplit(sep=".", maxsplit=1)
 
         source_fb = self.get_fb(source_attr[0])
-        source_name = source_attr[1]
+        source_port_name = source_attr[1]
         destination_fb = self.get_fb(destination_attr[0])
-        destination_name = destination_attr[1]
+        destination_port_name = destination_attr[1]
 
-        connection = fb_interface.Connection(destination_fb, destination_name)
-        source_fb.add_connection(source_name, connection)
+        connection = fb_interface.Connection(
+            destination_fb, destination_port_name, source_fb, source_port_name
+        )
+        source_fb.add_output_connection(source_port_name, connection)
+        destination_fb.add_input_connection(destination_port_name, connection)
 
-        logging.info('connection created between {0} and {1}'.format(source, destination))
+        logger.info(
+            "connection created between {0} and {1}".format(source, destination)
+        )
 
     def create_watch(self, source, destination):
-        logging.info('creating a new watch...')
+        logger.info("creating a new watch...")
 
-        source_attr = source.split(sep='.')
+        source_attr = source.rsplit(sep=".", maxsplit=1)
         source_fb = self.get_fb(source_attr[0])
         source_name = source_attr[1]
 
@@ -121,15 +157,17 @@ class Configuration:
             source_fb.set_attr(source_name, set_watch=True)
         except AttributeError as error:
             # check if the return if None
-            logging.error(error)
-            logging.error("don't forget to delete the watch when you delete a function block")
+            logger.error(error)
+            logger.error(
+                "don't forget to delete the watch when you delete a function block"
+            )
 
-        logging.info('watch created between {0} and {1}'.format(source, destination))
+        logger.info("watch created between {0} and {1}".format(source, destination))
 
     def delete_watch(self, source, destination):
-        logging.info('deleting a new watch...')
+        logger.info("deleting a new watch...")
 
-        source_attr = source.split(sep='.')
+        source_attr = source.split(sep=".")
         source_fb = self.get_fb(source_attr[0])
         source_name = source_attr[1]
 
@@ -137,24 +175,24 @@ class Configuration:
             source_fb.set_attr(source_name, set_watch=False)
         except AttributeError as error:
             # check if the return if None
-            logging.error(error)
-            logging.error("don't forget to delete the watch when you delete a function block")
+            logger.error(error)
+            logger.error(
+                "don't forget to delete the watch when you delete a function block"
+            )
 
-        logging.info('watch deleted between {0} and {1}'.format(source, destination))
+        logger.info("watch deleted between {0} and {1}".format(source, destination))
 
     def write_connection(self, source_value, destination):
-        logging.error('writing a connection...')
-        logging.error(f"SRC: {source_value} DST {destination}")
-        destination_attr = destination.split(sep='.')
+        logger.info(f"Writing constant {source_value} to {destination}")
+        destination_attr = destination.rsplit(sep=".", maxsplit=1)
         destination_fb = self.get_fb(destination_attr[0])
         destination_name = destination_attr[1]
 
         v_type, value, is_watch = destination_fb.read_attr(destination_name)
-        logging.error("Event recived!!!!!!!!!!!!!!!!!")
 
         # Verifies if is to write an event
-        if source_value == '$e':
-            logging.info('writing an event...')
+        if source_value == "$e":
+            logger.info("writing an event...")
             if value is not None:
                 # If the value is not None increment
                 destination_fb.push_event(destination_name, value + 1)
@@ -164,18 +202,24 @@ class Configuration:
 
         # Writes a hardcoded value
         else:
-            logging.info('writing a hardcoded value...')
+            logger.info("writing a hardcoded value...")
             value_to_set = self.convert_type(source_value, v_type)
-            logging.error(f"Data conversion:\n SRC: {source_value}\nType:{v_type}\n Converted value: {value_to_set} DST:{destination_name}")
+            logger.info(
+                f"Data conversion:\n SRC: {source_value}\nType:{v_type}\n Converted value: {value_to_set} DST:{destination_name}"
+            )
 
             destination_fb.set_attr(destination_name, value_to_set)
 
-        logging.info('connection ({0}) configured with the value {1}'.format(destination, source_value))
+        logger.info(
+            "connection ({0}) configured with the value {1}".format(
+                destination, source_value
+            )
+        )
 
     def read_watches(self, start_time):
-        logging.info('reading watches...')
+        wlog.info("reading watches...")
 
-        resources_xml = ETree.Element('Resource', {'name': self.config_id})
+        resources_xml = ETree.Element("Resource", {"name": self.config_id})
 
         for fb_name, fb_element in self.fb_dictionary.items():
             fb_xml, watches_len = fb_element.read_watches(start_time)
@@ -183,53 +227,88 @@ class Configuration:
             if watches_len > 0:
                 resources_xml.append(fb_xml)
 
-        fb_watches_len = len(resources_xml.findall('FB'))
+        fb_watches_len = len(resources_xml.findall("FB"))
         return resources_xml, fb_watches_len
 
     def start_work(self):
-        logging.info('starting the fb flow...')
+        logger.info("starting the fb flow...")
         for fb_name, fb_element in self.fb_dictionary.items():
-            if fb_name != 'START':
+            if fb_name != "START":
                 fb_element.start()
                 # check if the update_variables service is null
                 if fb_element.ua_variables_update is not None:
                     # updates the opc-ua variables
                     fb_element.ua_variables_update()
 
-
-        outputs = self.get_fb('START').fb_obj.schedule()
-        self.get_fb('START').update_outputs(outputs)
+        outputs = self.get_fb("START").fb_obj.schedule()
+        self.get_fb("START").update_outputs(outputs)
 
     def stop_work(self):
-        logging.info('stopping the fb flow...')
+        logger.info("stopping the fb flow...")
         for fb_name, fb_element in self.fb_dictionary.items():
-            if fb_name != 'START':
+            if fb_name != "START":
                 fb_element.stop()
-
 
     @staticmethod
     def convert_type(value, value_type):
         converted_value = None
 
+        # Unspecified type ANY
+        # General format: <Type>#<value>
+        # Examples: INT#8500  or FLOAT#41.5
+        if value_type == "ANY" or value_type == "DATE_AND_TIME":
+            parts = value.split("#")
+            if len(parts) == 2:
+                value_type, value = parts
+            else:
+                logger.error(
+                    "Incorrect constant formatting! use <Type>#<value> like INT#8500"
+                )
+
         # String variable
-        if value_type == 'WSTRING' or value_type == 'STRING' or value_type == 'ANY' or value_type == 'TIME':
+        if value_type == "WSTRING" or value_type == "STRING" or value_type == "TIME":
             converted_value = value
 
+        # date and time variable in iso format like: '2011-11-04 00:05:23.283+00:00'
+        # Caution!!! if +HH:MM is specified the time zone is clear
+        # otherwise the local timeszone is used
+        if value_type == "DATE_AND_TIME":
+            timestamp = datetime.fromisoformat(value)
+            # localize to system timezone if not specified
+            if (
+                timestamp.tzinfo is None
+                or timestamp.tzinfo.utcoffset(timestamp) is None
+            ):
+                timestamp = timestamp.astimezone()
+            converted_value = timestamp
+
         # Boolean variable
-        elif value_type == 'BOOL':
+        elif value_type == "BOOL":
             # Checks if is true
-            if value == '1' or value == 'true' or value == 'True' or value == 'TRUE' or value == 't':
+            if (
+                value == "1"
+                or value == "true"
+                or value == "True"
+                or value == "TRUE"
+                or value == "t"
+            ):
                 converted_value = True
             # Checks if is false
-            elif value == '0' or value == 'false' or value == 'False' or value == 'FALSE' or value == 'f':
+            elif (
+                value == "0"
+                or value == "false"
+                or value == "False"
+                or value == "FALSE"
+                or value == "f"
+            ):
                 converted_value = False
 
         # Integer variable
-        elif value_type == 'UINT' or value_type == 'Event' or value_type == 'INT':
+        elif value_type == "UINT" or value_type == "Event" or value_type == "INT":
             converted_value = int(value)
 
         # Float variable
-        elif value_type == 'REAL' or value_type == 'LREAL':
+        elif value_type == "REAL" or value_type == "LREAL":
             converted_value = float(value)
 
         return converted_value

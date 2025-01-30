@@ -11,37 +11,51 @@ class MonitorSystem(Thread):
     kill_event = Event()
 
     def __init__(self, ua_peer):
-        Thread.__init__(self, name='monitoring_thread')
+        Thread.__init__(self, name="monitoring_thread")
         self.kill_event.clear()
         # creates the opc-ua folder
-        folder_idx, folder_path, folder_list = utils.default_folder(ua_peer, ua_peer.base_idx,
-                                                                    ua_peer.ROOT_PATH, ua_peer.ROOT_LIST,
-                                                                    'HardwareMonitoring')
+        folder_idx, folder_path, folder_list = utils.default_folder(
+            ua_peer,
+            ua_peer.base_idx,
+            ua_peer.ROOT_PATH,
+            ua_peer.ROOT_LIST,
+            "HardwareMonitoring",
+        )
         # variables names
-        var_names = ('CPU_PERCENT', 'CPU_FREQ_CURRENT', 'MEM_AVAILABLE', 
-                    'MEM_PERCENTAGE', 'MEM_USED', 'MEM_CACHED', 'MEM_SHARED')
+        var_names = (
+            "CPU_PERCENT",
+            "CPU_FREQ_CURRENT",
+            "MEM_AVAILABLE",
+            "MEM_PERCENTAGE",
+            "MEM_USED",
+            "MEM_CACHED",
+            "MEM_SHARED",
+        )
         # zips both names and values in on dict
         tuple_vars = zip(var_names, self.measure_hardware())
 
         # ua variables
         ua_vars = []
         for var_name, var_value in tuple_vars:
-            var_idx = '{0}:{1}'.format(folder_idx, var_name)
-            browse_name = '2:{0}'.format(var_name)
-            ua_var = ua_peer.create_variable(folder_path, var_idx, browse_name, var_value)
+            var_idx = "{0}:{1}".format(folder_idx, var_name)
+            browse_name = "2:{0}".format(var_name)
+            ua_var = ua_peer.create_variable(
+                folder_path, var_idx, browse_name, var_value
+            )
             ua_vars.append(ua_var)
 
         # joins the ua variables with the names
         self.ua_vars_dict = dict(zip(var_names, ua_vars))
 
         # open logs file
-        self.logs_path = os.path.join(os.path.dirname(sys.path[0]), 'resources', 'error_list.log')
+        self.logs_path = os.path.join(
+            os.path.dirname(sys.path[0]), "resources", "error_list.log"
+        )
 
         # create ua variable for log
-        self.ua_log = ua_peer.create_variable(folder_path, 
-                                            '{0}:ERROR_LOG'.format(folder_idx),
-                                            '2:ERROR_LOG',
-                                            '')
+        self.ua_log = ua_peer.create_variable(
+            folder_path, "{0}:ERROR_LOG".format(folder_idx), "2:ERROR_LOG", ""
+        )
 
     def run(self):
         # monitor the hardware until kill event
@@ -53,7 +67,7 @@ class MonitorSystem(Thread):
             for ua_var, value in tuple_vars:
                 ua_var.set_value(value)
             # updates log variable
-            with open(self.logs_path, 'r') as logs_file:
+            with open(self.logs_path, "r") as logs_file:
                 self.ua_log.set_value(logs_file.read())
             # waits n seconds
             self.kill_event.wait(1)

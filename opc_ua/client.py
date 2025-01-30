@@ -4,11 +4,13 @@ import logging
 
 
 class UaClient(base.UaBase, Client):
-
     def __init__(self, address):
         Client.__init__(self, url=address, timeout=60 * 8)
         base.UaBase.__init__(self)
-        logging.basicConfig(level=logging.INFO, format='[%(asctime)s][%(levelname)s][%(threadName)-15s] %(message)s')
+        logging.basicConfig(
+            level=logging.INFO,
+            format="[%(asctime)s][%(levelname)s][%(threadName)-15s] %(message)s",
+        )
 
         self.connect()
         self.root = self.get_root_node()
@@ -38,4 +40,3 @@ class UaClient(base.UaBase, Client):
             elements.join(["/", element])
 
         return elements
-
