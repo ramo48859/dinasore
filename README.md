@@ -1,7 +1,12 @@
 ![logo](https://github.com/DIGI2-FEUP/dinasore/wiki/images/logo.png)
 
-
-**D**ynamic **IN**telligent **A**rchitecture for **S**oftware and M**O**dular **RE**configuration - **DINASORE** - is a distributed platform that enables reconfiguration of **Cyber-Physical System** (CPS). The DINASORE platform allows the implementation of Function Block (FB) based pipelines for sensor integration, data processing, and systems control. The FBs are implemented in Python and can be redistributed across the DINASORE nodes. The DINASORE uses the **4DIAC-IDE** as graphical user interface (GUI) implementing the **IEC61499** standards. This version is targeted to the **Industry 4.0** applications, for that, it also uses the **OPC-UA** protocol to allow communication with the other industrial components.
+**D**ynamic **IN**telligent **A**rchitecture for **S**oftware and M**O**dular **RE**configuration - **DINASORE** - is a
+distributed platform that enables reconfiguration of **Cyber-Physical System** (CPS). The DINASORE platform allows the
+implementation of Function Block (FB) based pipelines for sensor integration, data processing, and systems control. The
+FBs are implemented in Python and can be redistributed across the DINASORE nodes. The DINASORE uses the **4DIAC-IDE** as
+graphical user interface (GUI) implementing the **IEC61499** standards. This version is targeted to the **Industry 4.0**
+applications, for that, it also uses the **OPC-UA** protocol to allow communication with the other industrial
+components.
 
 ## Contents
 
@@ -13,10 +18,10 @@
 * [OPC-UA Data Model](https://github.com/DIGI2-FEUP/dinasore/wiki/2.3.-OPC-UA-Data-Model)
 * [Behavioral Anomaly Detection](https://github.com/DIGI2-FEUP/dinasore/wiki/2.2.-Behavioral-Anomaly-Detection-functionality)
 * [Tutorials Resume](https://github.com/DIGI2-FEUP/dinasore/wiki/3.-Tutorials-Resume)
-  * [Sensorization - "Hello World!"](https://github.com/DIGI2-FEUP/dinasore/wiki/3.1.-Hands-On:-Sensorization-"Hello-World!")
-  * [Sensorization - Distributed CPS](https://github.com/DIGI2-FEUP/dinasore/wiki/3.2.-Hands-On:-Distributed-Sensorization)
-  * [Optimization](https://github.com/DIGI2-FEUP/dinasore/wiki/3.3.-Hands-On:-Optimization)
-  * [OPC-UA - Generating and calling methods](https://github.com/DIGI2-FEUP/dinasore/wiki/3.4.-Hands-On:-OPC-UA-Generating-and-calling-methods)
+    * [Sensorization - "Hello World!"](https://github.com/DIGI2-FEUP/dinasore/wiki/3.1.-Hands-On:-Sensorization-"Hello-World!")
+    * [Sensorization - Distributed CPS](https://github.com/DIGI2-FEUP/dinasore/wiki/3.2.-Hands-On:-Distributed-Sensorization)
+    * [Optimization](https://github.com/DIGI2-FEUP/dinasore/wiki/3.3.-Hands-On:-Optimization)
+    * [OPC-UA - Generating and calling methods](https://github.com/DIGI2-FEUP/dinasore/wiki/3.4.-Hands-On:-OPC-UA-Generating-and-calling-methods)
 
 <!---
 ## Features
@@ -44,7 +49,9 @@
 
 Please use the following citation, or the BibTex entry (if you are using LaTex) for citation purposes:
 
-- E. Pereira, J. Reis, and G. Gonçalves, “DINASORE: A Dynamic Intelligent Reconfiguration Tool for Cyber-Physical Production Systems,” in Eclipse Conference on Security, Artificial Intelligence, and Modeling for the Next Generation Internet of Things (Eclipse SAM IoT), 2020, pp. 63–71, [Online]. Available: http://ceur-ws.org/Vol-2739/#paper_9.
+- E. Pereira, J. Reis, and G. Gonçalves, “DINASORE: A Dynamic Intelligent Reconfiguration Tool for Cyber-Physical
+  Production Systems,” in Eclipse Conference on Security, Artificial Intelligence, and Modeling for the Next Generation
+  Internet of Things (Eclipse SAM IoT), 2020, pp. 63–71, [Online]. Available: http://ceur-ws.org/Vol-2739/#paper_9.
 
 ```
 @inproceedings{pereira2020dinasore,
@@ -56,3 +63,16 @@ Please use the following citation, or the BibTex entry (if you are using LaTex) 
     url = {http://ceur-ws.org/Vol-2739/#paper_9}
 }
 ```
+
+## Changes
+
+* Fixed parsing errors when unused Tags are available in the function block definition
+* Added type DATE_AND_TIME
+* Fixed compatiblity issues with 4Diac 3.x.x:
+  The application name is appended to the instance name like MyApp.FunctionblockName.PortName prior to that it was just
+  FunctionblockName.PortName
+* prepended and appended \' to string watches to meet the new requirements of 4diac 3.x.x
+* Only unconnected INIT event inputs are connected to START.COLD
+  Now it is possible to init a block after another has finished
+* Improved performance of function block loading considerably
+* Improved logging
