@@ -1,10 +1,10 @@
 import threading
 import logging
-from core import fb_interface
-from core import sniffer
+from dinasore.core import fb_interface
+from dinasore.core import sniffer
 import queue
 
-from fb_resources import FBResources
+from dinasore.core.fb_resources import FBResources
 
 logger = logging.getLogger("dinasore")
 

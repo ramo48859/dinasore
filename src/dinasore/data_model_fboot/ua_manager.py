@@ -3,12 +3,11 @@ import os
 import sys
 from time import perf_counter
 
-from fb_resources import FBResources
-from opc_ua import peer
+from dinasore.core.fb_resources import FBResources
+from dinasore.opc_ua import peer
 from xml.etree import ElementTree as ETree
-from data_model_fboot import ua_object, monitor, utils, ua_method
-from core.configuration import Configuration
-from core.fb_resources import FBResources
+from dinasore.data_model_fboot import ua_object, monitor, utils, ua_method
+from dinasore.core.configuration import Configuration
 
 logger = logging.getLogger("dinasore")
 
@@ -132,7 +131,7 @@ class UaManagerFboot(peer.UaPeer):
     def generate_function_blocks(self, lines):
         for line in lines:
             # Remove start fb from line
-            chunks = line.split(";",maxsplit = 1)
+            chunks = line.split(";", maxsplit=1)
             if len(chunks) != 2:
                 raise self.InvalidFbootState
             xml_element = ETree.fromstring(chunks[1])
@@ -150,7 +149,7 @@ class UaManagerFboot(peer.UaPeer):
     def generate_connections(self, lines):
         for line in lines:
             # Remove start fb from line
-            chunks = line.split(";",maxsplit = 1)
+            chunks = line.split(";", maxsplit=1)
             if len(chunks) != 2:
                 raise self.InvalidFbootState
             xml_element = ETree.fromstring(chunks[1])

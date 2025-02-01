@@ -1,5 +1,5 @@
 from threading import Thread
-from opc_ua.examples import workers_example
+from dinasore.opc_ua.examples import workers_example
 
 
 class SubHandler(object):

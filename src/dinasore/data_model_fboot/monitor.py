@@ -1,6 +1,6 @@
 from threading import Thread
 from threading import Event
-from data_model_fboot import utils
+from dinasore.data_model_fboot import utils
 import psutil
 import os
 import sys

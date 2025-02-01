@@ -16,8 +16,8 @@ sys.path.insert(0, os.getcwd())
 sys.path.insert(0, os.path.join(os.getcwd(), "resources"))
 # sys.path.insert(0, os.path.join(os.getcwd(),"resources","energy_management_system"))
 
-from communication import tcp_server
-from core import manager
+from dinasore.communication import tcp_server
+from dinasore.core import manager
 
 
 logger = logging.getLogger("dinasore")  # __name__ is a common choice

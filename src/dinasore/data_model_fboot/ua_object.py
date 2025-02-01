@@ -1,8 +1,8 @@
-from data_model_fboot import utils
+from dinasore.data_model_fboot import utils
 import logging
 import uuid
 
-from fb_resources import FBResources
+from dinasore.core.fb_resources import FBResources
 
 logger = logging.getLogger("dinasore")
 

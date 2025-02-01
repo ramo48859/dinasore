@@ -6,7 +6,7 @@ import time
 import datetime
 from queue import Queue
 
-from fb_resources import FBResources
+from .fb_resources import FBResources
 
 logger = logging.getLogger("dinasore")
 wlog = logging.getLogger("Watch")
@@ -581,7 +581,7 @@ class FBInterface:
             self.output_connections[value_name] = conns
 
     def add_input_connection(self, value_name, connection):
-        #multiple input events are allowed
+        # multiple input events are allowed
         if value_name in self.input_events:
             if value_name in self.input_connections:
                 conns = self.input_connections[value_name]

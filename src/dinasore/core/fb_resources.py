@@ -3,7 +3,7 @@ import os
 import sys
 import xml.etree.ElementTree as ETree
 import logging
-from data_model_fboot import utils
+from dinasore.data_model_fboot import utils
 
 from time import perf_counter
 

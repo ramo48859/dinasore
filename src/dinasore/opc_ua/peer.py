@@ -1,5 +1,5 @@
-from opc_ua import client
-from opc_ua import base
+from dinasore.opc_ua import client
+from dinasore.opc_ua import base
 from opcua import Server
 import threading
 import logging

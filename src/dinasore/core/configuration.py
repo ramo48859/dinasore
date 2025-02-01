@@ -5,10 +5,10 @@ from datetime import datetime
 import os
 from typing import List
 
-from core import fb
-from core import fb_interface
-from core.fb_resources import FBResources
-from data_model_fboot.utils import create_fb_index
+from dinasore.core import fb
+from dinasore.core import fb_interface
+from dinasore.core.fb_resources import FBResources
+from dinasore.data_model_fboot.utils import create_fb_index
 
 logger = logging.getLogger("dinasore")
 wlog = logging.getLogger("Watch")

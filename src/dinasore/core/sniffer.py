@@ -6,7 +6,7 @@ import importlib
 import sys
 import os
 
-from fb_resources import FBResources
+from dinasore.core.fb_resources import FBResources
 
 
 # This sniffer class looks for changes in the function block functions
