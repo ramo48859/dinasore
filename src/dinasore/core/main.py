@@ -7,6 +7,7 @@ import glob
 import queue
 import atexit
 import json
+from pathlib import Path
 
 sys.path.append(os.path.join(os.path.dirname(sys.path[0])))
 
@@ -23,7 +24,7 @@ from dinasore.core import manager
 logger = logging.getLogger("dinasore")  # __name__ is a common choice
 
 
-def setup_logging(level):
+def setup_logging(level: str, log_path: Path):
     # Create a queue for logging
     log_queue = queue.Queue(-1)
 
@@ -56,14 +57,18 @@ def setup_logging(level):
     stderr_handler.setLevel(logging.WARNING)
     stderr_handler.setFormatter(pretty_formater)
 
+    # create log directory
+    if not os.path.exists(log_path):
+        os.makedirs(log_path)
+
     # Create a file logger
-    file_handler = logging.FileHandler("resources/error_list.log", mode="w")
+    file_handler = logging.FileHandler(log_path.joinpath("app_log.txt"), mode="w")
     file_handler.setLevel(level)
     file_handler.setFormatter(pretty_formater)
 
     # Create JSON file handler
     file_json_handler = logging.handlers.RotatingFileHandler(
-        "resources/error_list.jsonl", maxBytes=10000, backupCount=3, mode="w"
+        log_path.joinpath("app_log.jsonl"), maxBytes=10000, backupCount=3, mode="w"
     )
     file_json_handler.setLevel(level)
     file_json_formatter = MyJSONFormatter()
@@ -164,6 +169,12 @@ def main():
         help="logging level at the file resources/error_list.log, e.g. INFO, WARN or ERROR (default: ERROR)",
     )
     parser.add_argument(
+        "--log-path",
+        type=str,
+        metavar="log_path",
+        help="Path to folder where logs are stored (default: ./logs)",
+    )
+    parser.add_argument(
         "-g", action="store_true", help="sets on the self-organizing agent"
     )
     parser.add_argument(
@@ -194,6 +205,14 @@ def main():
     else:
         monitor = None
 
+    if args.log_path is not None:
+        if Path(args.log_path).is_absolute():
+            log_path = Path(args.log_path)
+        else:
+            log_path = Path.cwd().joinpath(args.log_path)
+    else:
+        log_path = Path.cwd().joinpath("logs")
+
     ##############################################################
     ## remove all files in monitoring folder
     monitoring_path = os.path.join(
@@ -205,10 +224,10 @@ def main():
     ##############################################################
 
     # Configure the logging output
-    setup_logging(log_level)
+    setup_logging(log_level, log_path)
 
     # creates the 4diac manager
-    m = manager.Manager(monitor=monitor)
+    m = manager.Manager(monitor=monitor, log_file=log_path.joinpath("app_log.txt"))
     # sets the ua integration option
     m.build_ua_manager_fboot(address, port_opc)
 

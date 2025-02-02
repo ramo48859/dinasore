@@ -2,6 +2,7 @@ import logging
 import os
 import sys
 from time import perf_counter
+from pathlib import Path
 
 from dinasore.core.fb_resources import FBResources
 from dinasore.opc_ua import peer
@@ -34,7 +35,7 @@ class UaManagerFboot(peer.UaPeer):
         self.method_outputs = None
         self.opcua_method_name = None
 
-    def __call__(self, config: Configuration):
+    def __call__(self, config: Configuration, log_file: Path):
         # base idx for the opc-ua nodeId
         self.base_idx = "ns=2;s={0}".format(self.base_name)
         # creates the root object 'SmartObject'
@@ -45,7 +46,7 @@ class UaManagerFboot(peer.UaPeer):
         # configuration (connection to 4diac code)
         self.config = config
         # create the monitor hardware variables
-        self.monitor_hardware = monitor.MonitorSystem(self)
+        self.monitor_hardware = monitor.MonitorSystem(self, log_file)
         self.monitor_hardware.start()
         # create function blocks folder
         folder_idx, folder_path, folder_list = utils.default_folder(

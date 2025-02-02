@@ -3,3 +3,4 @@ resources/data_model.fboot
 resources/error_list*
 *.prof
 cache/
+logs/

@@ -9,6 +9,7 @@ import os
 import sys
 import shutil
 import glob
+from pathlib import Path
 
 logger = logging.getLogger("dinasore")
 wlog = logging.getLogger("watch")
@@ -19,7 +20,7 @@ class Manager:
     4Diac manager class
     """
 
-    def __init__(self, monitor=None):
+    def __init__(self, monitor=None, log_file: Path = None):
         self.start_time = time.time() * 1000
         self.config_dictionary = dict()
         self.monitor = monitor
@@ -32,6 +33,9 @@ class Manager:
 
         # new opc-ua model variables
         self.requests = []
+
+        # for monitoring ??
+        self.log_file = log_file
 
     def get_config(self, config_id):
         fb_element = None
@@ -181,7 +185,7 @@ class Manager:
                 )
                 config = configuration.Configuration("EMB_RES", "EMB_RES")
                 self.set_config("EMB_RES", config)
-                self.ua_manager_fboot(config)
+                self.ua_manager_fboot(config, self.log_file)
 
         response = self.build_response(request_id, xml)
         return response
@@ -264,6 +268,6 @@ class Manager:
         config = configuration.Configuration("EMB_RES", "EMB_RES", monitor=self.monitor)
         self.set_config("EMB_RES", config)
         # parses the description file
-        self.manager_ua_fboot(config)
+        self.manager_ua_fboot(config, self.log_file)
         self.manager_ua_fboot.from_fboot()
         self.ua_integration = True

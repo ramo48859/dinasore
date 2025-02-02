@@ -2,15 +2,13 @@ from threading import Thread
 from threading import Event
 from dinasore.data_model_fboot import utils
 import psutil
-import os
-import sys
 
 
 class MonitorSystem(Thread):
     # creates the event kill thread event
     kill_event = Event()
 
-    def __init__(self, ua_peer):
+    def __init__(self, ua_peer, log_file: str):
         Thread.__init__(self, name="monitoring_thread")
         self.kill_event.clear()
         # creates the opc-ua folder
@@ -48,9 +46,7 @@ class MonitorSystem(Thread):
         self.ua_vars_dict = dict(zip(var_names, ua_vars))
 
         # open logs file
-        self.logs_path = os.path.join(
-            os.path.dirname(sys.path[0]), "resources", "error_list.log"
-        )
+        self.logs_path = log_file
 
         # create ua variable for log
         self.ua_log = ua_peer.create_variable(
