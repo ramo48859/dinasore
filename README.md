@@ -64,6 +64,22 @@ Please use the following citation, or the BibTex entry (if you are using LaTex) 
 }
 ```
 
+## Basic Usage
+
+After installation the dinasore runtime is started using uv with
+
+```console
+uv run dinasore [ARGS]
+```
+
+with optional command line arguments. To run the dinasore without uv the virtual enelope, where dinasore is installed
+must be activated first and then dinasore can be run as module
+
+```console
+source .venv/bin/activate
+python -m dinasore [ARGS]
+```
+
 ## Changes
 
 * Fixed parsing errors when unused Tags are available in the function block definition

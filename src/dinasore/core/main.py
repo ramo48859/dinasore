@@ -103,14 +103,13 @@ def setup_logging(level):
     atexit.register(queue_listener.stop)
 
 
-if __name__ == "__main__":
+def main():
     log_levels = {
         "ERROR": logging.ERROR,
         "WARN": logging.WARN,
         "INFO": logging.INFO,
         "DEBUG": logging.DEBUG,
     }
-
     address = "localhost"
     port_diac = 61499
     port_opc = 4840
@@ -225,3 +224,7 @@ if __name__ == "__main__":
         m.manager_ua.stop_ua()
         hand.stop_server()
         sys.exit(0)
+
+
+if __name__ == "__main__":
+    main()
