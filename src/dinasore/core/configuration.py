@@ -2,32 +2,27 @@ from xml.etree import ElementTree as ETree
 import logging
 import inspect
 from datetime import datetime
-import os
 from typing import List
 
 from dinasore.core import fb
 from dinasore.core import fb_interface
 from dinasore.core.fb_resources import FBResources
-from dinasore.data_model_fboot.utils import create_fb_index
 
 logger = logging.getLogger("dinasore")
 wlog = logging.getLogger("Watch")
 
 
 class Configuration:
-    def __init__(self, config_id, config_type, monitor=None):
+    def __init__(self, config_id, config_type, fb_index, monitor=None):
         self.monitor = monitor
 
         self.fb_dictionary = dict()
 
         self.config_id = config_id
 
-        # search function block on file system
-        root_fbs_path = os.path.join(os.getcwd(), "resources")
-        fb_dict = create_fb_index(root_fbs_path)
-        self.fb_dict = fb_dict
+        self.fb_index = fb_index
 
-        start_resource = FBResources(config_type, fb_dict[config_type])
+        start_resource = FBResources(config_type, fb_index[config_type])
         self.create_fb("START", start_resource)
 
     def get_fb(self, fb_name):

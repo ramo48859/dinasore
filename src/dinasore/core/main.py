@@ -19,6 +19,7 @@ sys.path.insert(0, os.path.join(os.getcwd(), "resources"))
 
 from dinasore.communication import tcp_server
 from dinasore.core import manager
+from dinasore.data_model_fboot.utils import create_fb_index
 
 
 logger = logging.getLogger("dinasore")  # __name__ is a common choice
@@ -182,7 +183,16 @@ def main():
         "-m",
         metavar="monitor",
         nargs="*",
-        help="activates the behavioral anomaly detection feature. If no paramters are specified, the default values are 10 samples for initial training, each sample with 20 seconds (approximately 3m20s). As an example, you can specify paramters the following way (-m 5 10) meaning 10 samples for training with 10 seconds each sample.",
+        help="activates the behavioral anomaly detection feature. If no parameters are specified, the default values are 10 samples for initial training, each sample with 20 seconds (approximately 3m20s). As an example, you can specify paramters the following way (-m 5 10) meaning 10 samples for training with 10 seconds each sample.",
+    )
+    parser.add_argument(
+        "-f",
+        "--fb-paths",
+        metavar="fb_paths",
+        nargs="+",
+        help="list of absolute or relative paths to folders containing function blocks",
+        type=Path,
+        default=[Path.cwd()],
     )
     args = parser.parse_args()
 
@@ -206,14 +216,6 @@ def main():
     else:
         monitor = None
 
-    if args.log_path is not None:
-        if Path(args.log_path).is_absolute():
-            log_path = Path(args.log_path)
-        else:
-            log_path = Path.cwd().joinpath(args.log_path)
-    else:
-        log_path = Path.cwd().joinpath("logs")
-
     ##############################################################
     ## remove all files in monitoring folder
     monitoring_path = os.path.join(
@@ -225,12 +227,15 @@ def main():
     ##############################################################
 
     # Configure the logging output
-    setup_logging(log_level, log_path)
+    setup_logging(log_level, args.log_path)
+
+    # search given locations for function blocks and build an index
+    fb_index = create_fb_index(args.fb_paths)
 
     # creates the 4diac manager
-    m = manager.Manager(monitor=monitor, log_file=log_path.joinpath("app_log.txt"))
+    m = manager.Manager(monitor=monitor, log_file=args.log_path.joinpath("app_log.txt"))
     # sets the ua integration option
-    m.build_ua_manager_fboot(address, port_opc)
+    m.build_ua_manager_fboot(address, port_opc, fb_index)
 
     # creates the tcp server to communicate with the 4diac
     hand = tcp_server.TcpServer(address, port_diac, 10, m)

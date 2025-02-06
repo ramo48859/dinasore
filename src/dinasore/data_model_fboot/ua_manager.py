@@ -141,7 +141,7 @@ class UaManagerFboot(peer.UaPeer):
                     for child in xml_element:
                         if child.tag == "FB" and child.get("Type") != "EMB_RES":
                             type = child.get("Type")
-                            root_path = self.config.fb_dict[type]
+                            root_path = self.config.fb_index[type]
                             fb_resource = FBResources(type, root_path)
                             self.parse_fbt(fb_resource, child.get("Name"))
             except KeyError:

@@ -10,6 +10,7 @@ import sys
 import shutil
 import glob
 from pathlib import Path
+from typing import Dict
 
 logger = logging.getLogger("dinasore")
 wlog = logging.getLogger("watch")
@@ -262,10 +263,12 @@ class Manager:
         response = b"".join([response_header, response_xml])
         return response
 
-    def build_ua_manager_fboot(self, address, port):
+    def build_ua_manager_fboot(self, address, port, fb_index: Dict[str, str]):
         self.manager_ua_fboot = ua_manager_fboot.UaManagerFboot(address, port)
         # creates the opc-ua manager
-        config = configuration.Configuration("EMB_RES", "EMB_RES", monitor=self.monitor)
+        config = configuration.Configuration(
+            "EMB_RES", "EMB_RES", fb_index, monitor=self.monitor
+        )
         self.set_config("EMB_RES", config)
         # parses the description file
         self.manager_ua_fboot(config, self.log_file)
