@@ -170,9 +170,10 @@ def main():
     )
     parser.add_argument(
         "--log-path",
-        type=str,
+        type=Path,
         metavar="log_path",
         help="Path to folder where logs are stored (default: ./logs)",
+        default=Path.cwd().joinpath("logs"),
     )
     parser.add_argument(
         "-g", action="store_true", help="sets on the self-organizing agent"
