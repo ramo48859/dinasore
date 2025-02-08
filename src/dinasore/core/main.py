@@ -230,6 +230,8 @@ def main():
     setup_logging(log_level, args.log_path)
 
     # search given locations for function blocks and build an index
+    default_lib = Path(__file__).parent.joinpath("resources")
+    args.fb_paths.append(default_lib)
     fb_index = create_fb_index(args.fb_paths)
 
     # creates the 4diac manager
