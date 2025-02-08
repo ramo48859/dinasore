@@ -7,7 +7,6 @@ requires-python = ">=3.10"
 dependencies = [
     "argparse>=1.4.0",
     "cryptography>=44.0.0",
-    "emslib",
     "numpy>=2.2.0",
     "opcua>=0.98.13",
     "pandas>=2.2.3",
@@ -15,9 +14,6 @@ dependencies = [
     "schedule>=1.2.2",
     "scikit-learn>=1.6.0",
 ]
-
-[tool.uv.sources]
-emslib = { git = "ssh://git@github.com/ramo48859/emsLib.git", branch = "main" }
 
 [dependency-groups]
 dev = [
