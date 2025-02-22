@@ -3,7 +3,9 @@ import os
 import sys
 import xml.etree.ElementTree as ETree
 import logging
+from pathlib import Path
 from dinasore.data_model_fboot import utils
+from typing import List, Dict
 
 from time import perf_counter
 
@@ -11,41 +13,36 @@ logger = logging.getLogger("dinasore")
 
 
 class FBResources:
-    def __init__(self, fb_type: str, root_path: str):
+    def __init__(self, fb_type: str, py_path: Path, fbt_path: Path, search_path: Path):
+        # type(name) of function block
         self.fb_type = fb_type
 
-        # Gets the dir path to the py and fbt files
-        self.root_path = root_path
-
         # Gets the file path to the python file
-        self.py_path = os.path.join(self.root_path, fb_type + ".py")
+        self.py_path = py_path
 
         # Gets the file path to the fbt (xml) file
-        self.fbt_path = os.path.join(self.root_path, fb_type + ".fbt")
+        self.fbt_path = fbt_path
 
-        # Loads the xml function block definition from disk
-        self.xml_tree = self._fetch_xml()
+        # Path, which is added to the python path on import
+        self.search_path = search_path
+
+        # module name relative to the search path
+        module_path = str(py_path.relative_to(search_path))
+        self.module_name = module_path.replace(os.sep, ".").rstrip(".py")
 
     def import_fb(self):
         logger.info("importing fb python file and definition file...")
         root = None
         fb_obj = None
 
+        # add search path to python path if not already there
+        if str(self.search_path) not in sys.path:
+            sys.path.append(str(self.search_path))
+
         try:
-            concatenate = False
-            package = ""
-            for dir in self.root_path.split(os.sep):
-                if not concatenate:
-                    if dir == "resources":
-                        concatenate = True
-                if concatenate:
-                    package += dir + "."
-            package = package[:-1]
             # Import method from python file
             start = perf_counter()
-            py_fb = importlib.import_module("." + self.fb_type, package=package)
-            # sys.path.insert(0,self.root_path)
-            # py_fb = importlib.import_module(self.fb_type)
+            py_fb = importlib.import_module(self.module_name)
             # sys.path.pop(0)
             end = perf_counter()
             logger.info(f"import_time: {end-start}")
@@ -53,10 +50,11 @@ class FBResources:
             fb_class = getattr(py_fb, self.fb_type)
             # Instance the fb class
             fb_obj = fb_class()
-            # Reads the xml
-            tree = self.xml_tree
+
+            # Loads the xml function block definition from disk
+            self.xml_tree = self._fetch_xml()
             # Gets the root element
-            root = tree.getroot()
+            root = self.xml_tree.getroot()
 
         except ModuleNotFoundError as error:
             logger.error("can not import the module (check fb_type.py nomenclature)")
@@ -80,7 +78,7 @@ class FBResources:
             logger.info("python file imported from: {0}".format(self.py_path))
 
             # Checking specified data types
-            for event in tree.findall(".//Event"):
+            for event in self.xml_tree.findall(".//Event"):
                 if event.get("Type") is not None and event.get("Type") != "Event":
                     logger.error(
                         'Wrong data type "{0}" specified for event {1}'.format(
@@ -90,7 +88,7 @@ class FBResources:
                     logger.error("Defaulting to Event")
                     event.set("Type", "Event")
 
-            for varDec in tree.findall(".//VarDeclaration"):
+            for varDec in self.xml_tree.findall(".//VarDeclaration"):
                 if (
                     varDec.get("Type") is not None
                     and varDec.get("Type") not in utils.XML_4DIAC
@@ -153,6 +151,34 @@ class FBResources:
 
     def download_module(self, mod_id):
         pass
+
+
+def search_fbs(root_directories: List[Path]) -> Dict[str, FBResources]:
+    # Find all .fbt files
+    fb_index: Dict[str, FBResources] = {}
+    for d in root_directories:
+        fbt_files = list(d.rglob("*.fbt"))
+        # root directory needs to be in the python path to find the modules later
+
+        for fbt_file in fbt_files:
+            # Convert fbt_file to a Path object (if it isn't already)
+            fbt_file = Path(fbt_file)
+
+            # Get directory name and file name
+            dir_name = fbt_file.parent
+            fbt_file_name = fbt_file.name
+
+            # Derive fb_type and py_file
+            fb_type = fbt_file_name.replace(".fbt", "")
+            py_file = dir_name.joinpath(fbt_file_name.replace(".fbt", ".py"))
+            # Check if the corresponding .py file exists
+            if py_file.exists():
+                fb_index[fb_type] = FBResources(fb_type, py_file, fbt_file, d)
+            else:
+                logger.warning(
+                    f"Discovered {py_file} but not its corresponding Python implementation *.py"
+                )
+    return fb_index
 
 
 class GeneralResources:

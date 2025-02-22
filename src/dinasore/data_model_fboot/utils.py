@@ -3,9 +3,6 @@ import logging
 from opcua import ua
 import os
 import sys
-from typing import Dict
-from typing import List
-from pathlib import Path
 
 UA_TYPES = {
     "String": ua.VariantType.String,
@@ -139,30 +136,6 @@ def scan_match(fb_name, dir):
         for file in files:
             if file.split(".")[0] == fb_name:
                 yield root
-
-
-def create_fb_index(root_directories: List[Path]) -> Dict[str, str]:
-    # Find all .fbt files
-    fbt_files = []
-    for d in root_directories:
-        fbt_files.extend(list(d.rglob("*.fbt")))
-
-    fb_index: Dict[str, str] = {}
-    for fbt_file in fbt_files:
-        dir_name = os.path.dirname(fbt_file)
-        fbt_file_name = os.path.basename(fbt_file)
-        fb_type = fbt_file_name.replace(".fbt", "")
-        py_file = os.path.join(dir_name, fbt_file_name.replace(".fbt", ".py"))
-
-        # Check if the corresponding .py file exists
-        if os.path.exists(py_file):
-            fb_index[fb_type] = dir_name
-        else:
-            logger.warning(
-                f"Discovered {py_file} but not its corresponding python implementation *.py"
-            )
-
-    return fb_index
 
 
 class UaInterface:

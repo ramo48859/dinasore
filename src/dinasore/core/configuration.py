@@ -2,7 +2,7 @@ from xml.etree import ElementTree as ETree
 import logging
 import inspect
 from datetime import datetime
-from typing import List
+from typing import List, Dict
 
 from dinasore.core import fb
 from dinasore.core import fb_interface
@@ -13,7 +13,9 @@ wlog = logging.getLogger("Watch")
 
 
 class Configuration:
-    def __init__(self, config_id, config_type, fb_index, monitor=None):
+    def __init__(
+        self, config_id, config_type, fb_index: Dict[str, FBResources], monitor=None
+    ):
         self.monitor = monitor
 
         self.fb_dictionary = dict()
@@ -22,8 +24,7 @@ class Configuration:
 
         self.fb_index = fb_index
 
-        start_resource = FBResources(config_type, fb_index[config_type])
-        self.create_fb("START", start_resource)
+        self.create_fb("START", fb_index["EMB_RES"])
 
     def get_fb(self, fb_name):
         fb_element = None

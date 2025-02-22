@@ -10,16 +10,11 @@ import json
 from pathlib import Path
 
 sys.path.append(os.path.join(os.path.dirname(sys.path[0])))
-
-
-# sys.path.insert(0, "F:\Dokumente\Projekte\WechselrichterAuslesen\Dinasore\fronos\dinasore")
 sys.path.insert(0, os.getcwd())
-sys.path.insert(0, os.path.join(os.getcwd(), "resources"))
-# sys.path.insert(0, os.path.join(os.getcwd(),"resources","energy_management_system"))
 
 from dinasore.communication import tcp_server
 from dinasore.core import manager
-from dinasore.data_model_fboot.utils import create_fb_index
+from dinasore.core.fb_resources import search_fbs
 
 
 logger = logging.getLogger("dinasore")  # __name__ is a common choice
@@ -230,9 +225,9 @@ def main():
     setup_logging(log_level, args.log_path)
 
     # search given locations for function blocks and build an index
-    default_lib = Path(__file__).parent.joinpath("resources")
+    default_lib = Path(__file__).parent.parent.joinpath("resources")
     args.fb_paths.append(default_lib)
-    fb_index = create_fb_index(args.fb_paths)
+    fb_index = search_fbs(args.fb_paths)
 
     # creates the 4diac manager
     m = manager.Manager(monitor=monitor, log_file=args.log_path.joinpath("app_log.txt"))

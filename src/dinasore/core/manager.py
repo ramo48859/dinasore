@@ -1,4 +1,5 @@
 from dinasore.core import configuration
+from dinasore.core.fb_resources import FBResources
 from dinasore.data_model_fboot import ua_manager as ua_manager_fboot
 from xml.etree import ElementTree as ETree
 import time
@@ -263,7 +264,7 @@ class Manager:
         response = b"".join([response_header, response_xml])
         return response
 
-    def build_ua_manager_fboot(self, address, port, fb_index: Dict[str, str]):
+    def build_ua_manager_fboot(self, address, port, fb_index: Dict[str, FBResources]):
         self.manager_ua_fboot = ua_manager_fboot.UaManagerFboot(address, port)
         # creates the opc-ua manager
         config = configuration.Configuration(
