@@ -65,6 +65,9 @@ class UaManagerFboot(peer.UaPeer):
         }
 
     def save_fboot(self, requests):
+        # Create filepath if non-existent
+        self.fboot_path.parent.mkdir(parents=True, exist_ok=True)
+
         file = open(self.fboot_path, "w")
         start_fb = None
         is_watch = False
