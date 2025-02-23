@@ -30,6 +30,8 @@ class FBResources:
         module_path = str(py_path.relative_to(search_path))
         self.module_name = module_path.replace(os.sep, ".").rstrip(".py")
 
+        self.xml_tree = None
+
     def import_fb(self):
         logger.info("importing fb python file and definition file...")
         root = None
@@ -119,6 +121,8 @@ class FBResources:
         return tree
 
     def get_xml(self):
+        if self.xml_tree is None:
+            self.xml_tree = self._fetch_xml()
         return self.xml_tree
 
     def get_description(self):
