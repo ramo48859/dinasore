@@ -22,7 +22,7 @@ class Manager:
     4Diac manager class
     """
 
-    def __init__(self, monitor=None, log_file: Path = None):
+    def __init__(self, monitor=None, log_file: Path = None, fboot_path: Path = None):
         self.start_time = time.time() * 1000
         self.config_dictionary = dict()
         self.monitor = monitor
@@ -38,6 +38,9 @@ class Manager:
 
         # for monitoring ??
         self.log_file = log_file
+
+        # Location of boot file
+        self.fboot_path = fboot_path
 
     def get_config(self, config_id):
         fb_element = None
@@ -99,6 +102,7 @@ class Manager:
                             self.manager_ua_fboot = ua_manager_fboot.UaManagerFboot(
                                 self.manager_ua_fboot.address,
                                 self.manager_ua_fboot.port,
+                                self.fboot_path,
                             )
                             self.manager_ua_fboot(config, self.log_file)
 
@@ -183,7 +187,9 @@ class Manager:
                 )
 
                 self.ua_manager_fboot = ua_manager_fboot.UaManagerFboot(
-                    self.ua_manager_fboot.address, self.ua_manager_fboot.port
+                    self.ua_manager_fboot.address,
+                    self.ua_manager_fboot.port,
+                    self.fboot_path,
                 )
                 config = configuration.Configuration(
                     "EMB_RES", "EMB_RES", self.fb_index
@@ -267,7 +273,9 @@ class Manager:
         return response
 
     def build_ua_manager_fboot(self, address, port, fb_index: Dict[str, FBResources]):
-        self.manager_ua_fboot = ua_manager_fboot.UaManagerFboot(address, port)
+        self.manager_ua_fboot = ua_manager_fboot.UaManagerFboot(
+            address, port, self.fboot_path
+        )
         self.fb_index = fb_index
         # creates the opc-ua manager
         config = configuration.Configuration(

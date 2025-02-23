@@ -1,6 +1,5 @@
 import logging
 import os
-import sys
 from time import perf_counter
 from pathlib import Path
 
@@ -17,12 +16,10 @@ class UaManagerFboot(peer.UaPeer):
     class InvalidFbootState(Exception):
         pass
 
-    def __init__(self, address, port):
+    def __init__(self, address, port, fboot_path: Path):
         self.address = address
         self.port = port
-        self.fboot_path = os.path.join(
-            os.path.dirname(sys.path[0]), "resources", "data_model.fboot"
-        )
+        self.fboot_path = fboot_path
         self.base_name = "DINASORE OPC-UA"
         self.endpoint = "opc.tcp://{0}:{1}".format(address, port)
 

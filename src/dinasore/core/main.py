@@ -249,8 +249,15 @@ def main():
     args.fb_paths.extend(plugins)
     fb_index = search_fbs(args.fb_paths)
 
+    # load path to fboot file from environment variable if set
+    fboot_path = Path(os.getenv("FBOOT_PATH", "resources/data_model.fboot")).absolute()
+
     # creates the 4diac manager
-    m = manager.Manager(monitor=monitor, log_file=args.log_path.joinpath("app_log.txt"))
+    m = manager.Manager(
+        monitor=monitor,
+        log_file=args.log_path.joinpath("app_log.txt"),
+        fboot_path=fboot_path,
+    )
     # sets the ua integration option
     m.build_ua_manager_fboot(address, port_opc, fb_index)
 
