@@ -7,7 +7,10 @@ import glob
 import queue
 import atexit
 import json
+from typing import List
 from pathlib import Path
+from importlib.metadata import entry_points
+from importlib.util import find_spec
 
 sys.path.append(os.path.join(os.path.dirname(sys.path[0])))
 sys.path.insert(0, os.getcwd())
@@ -102,6 +105,19 @@ def setup_logging(level: str, log_path: Path):
     # Start the QueueListener
     queue_listener.start()
     atexit.register(queue_listener.stop)
+
+
+def discover_plugins() -> List[Path]:
+    """Discover all installed plugins and load function blocks."""
+
+    # Find all plugins registered under 'dinasore.plugins'
+    discovered_plugins = entry_points().select(group="dinasore.plugins")
+
+    paths = []
+    for entry in discovered_plugins:
+        paths.append(Path(find_spec(entry.name).submodule_search_locations._path[0]))
+
+    return paths  # Dictionary of {function_block_name: function_block_class}
 
 
 def main():
@@ -224,9 +240,13 @@ def main():
     # Configure the logging output
     setup_logging(log_level, args.log_path)
 
+    # search for installed function block libraries
+    plugins = discover_plugins()
+
     # search given locations for function blocks and build an index
     default_lib = Path(__file__).parent.parent.joinpath("resources")
     args.fb_paths.append(default_lib)
+    args.fb_paths.extend(plugins)
     fb_index = search_fbs(args.fb_paths)
 
     # creates the 4diac manager

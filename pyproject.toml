@@ -17,6 +17,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "dinasore-function-blocks",
     "snakeviz>=2.2.2",
 ]
 
@@ -29,5 +30,8 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/dinasore"]
+
+[tool.uv.sources]
+dinasore-function-blocks = { git = "ssh://git@github.com/ramo48859/dinasore_function_blocks", branch = "cov-plugin" }
 
 
