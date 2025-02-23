@@ -87,7 +87,7 @@ class Manager:
                     if conf_name not in self.config_dictionary:
                         # Creates the configuration
                         config = configuration.Configuration(
-                            conf_name, conf_type, monitor=self.monitor
+                            conf_name, conf_type, self.fb_index, monitor=self.monitor
                         )
                         self.set_config(conf_name, config)
                         # check the options for ua_integration
@@ -100,7 +100,7 @@ class Manager:
                                 self.manager_ua_fboot.address,
                                 self.manager_ua_fboot.port,
                             )
-                            self.manager_ua_fboot(config)
+                            self.manager_ua_fboot(config, self.log_file)
 
         elif action == "QUERY":
             pass
@@ -185,7 +185,9 @@ class Manager:
                 self.ua_manager_fboot = ua_manager_fboot.UaManagerFboot(
                     self.ua_manager_fboot.address, self.ua_manager_fboot.port
                 )
-                config = configuration.Configuration("EMB_RES", "EMB_RES")
+                config = configuration.Configuration(
+                    "EMB_RES", "EMB_RES", self.fb_index
+                )
                 self.set_config("EMB_RES", config)
                 self.ua_manager_fboot(config, self.log_file)
 
@@ -266,6 +268,7 @@ class Manager:
 
     def build_ua_manager_fboot(self, address, port, fb_index: Dict[str, FBResources]):
         self.manager_ua_fboot = ua_manager_fboot.UaManagerFboot(address, port)
+        self.fb_index = fb_index
         # creates the opc-ua manager
         config = configuration.Configuration(
             "EMB_RES", "EMB_RES", fb_index, monitor=self.monitor
