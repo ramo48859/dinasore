@@ -44,12 +44,12 @@ class FBResources:
         try:
             # Import method from python file
             start = perf_counter()
-            py_fb = importlib.import_module(self.module_name)
+            self.py_fb = importlib.import_module(self.module_name)
             # sys.path.pop(0)
             end = perf_counter()
             logger.info(f"import_time: {end-start}")
             # Gets the running fb method
-            fb_class = getattr(py_fb, self.fb_type)
+            fb_class = getattr(self.py_fb, self.fb_type)
             # Instance the fb class
             fb_obj = fb_class()
 
@@ -104,6 +104,13 @@ class FBResources:
                     varDec.set("Type", "String")
 
         return root, fb_obj
+
+    def reload(self):
+        importlib.reload(self.py_fb)
+        # Gets the running fb method
+        fb_class = getattr(self.py_fb, self.fb_type)
+        # Instance the fb class
+        return fb_class()
 
     def _fetch_xml(self):
         logger.info("getting the xml fb definition...")
